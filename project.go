@@ -54,6 +54,26 @@ func (s *SimpleProject) configFile() string {
 	return filepath.Join(s.Root, ProjectPath, ProjectConfigFile)
 }
 
+func (s *SimpleProject) statusPath() string {
+	return filepath.Join(s.Root, ProjectPath, projectStatusPath)
+}
+
+func (s *SimpleProject) ensureStatusPath() (string, error) {
+	statusPath := s.statusPath()
+
+	if _, err := os.Stat(statusPath); os.IsNotExist(err) {
+		if err := os.Mkdir(statusPath, 0700); err != nil {
+			return statusPath, err
+		}
+		return statusPath, nil
+
+	} else if err != nil {
+		return statusPath, err
+	}
+
+	return statusPath, nil
+}
+
 func (s *SimpleProject) saveConfig(pc *ProjectConfig) error {
 	tmpFile := s.configFile() + ".tmp"
 
@@ -118,12 +138,13 @@ func (s *SimpleProject) Mark(ctx context.Context, session *Session, message stri
 		}
 	}
 
+	logEntry := status.LogEntry(session, message)
+
 	config, err := s.Config()
 	if err != nil {
 		return nil, err
 	}
 
-	logEntry := status.LogEntry(session, message)
 	if config.LastEntry != nil {
 		if ok, err := config.LastEntry.Hash.Equal(logEntry.Hash); err != nil {
 			return status, err
@@ -132,26 +153,48 @@ func (s *SimpleProject) Mark(ctx context.Context, session *Session, message stri
 		}
 	}
 
-	bts, err := json.Marshal(logEntry)
+	// Prepare serialised data before writing anything:
+	statusPath, err := s.ensureStatusPath()
 	if err != nil {
 		return nil, err
 	}
-	bts = append(bts, '\n')
 
-	// FIXME: flock
-	f, err := os.OpenFile(s.logFile(), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
+	statusData, err := json.MarshalIndent(status, "", "  ")
 	if err != nil {
 		return nil, err
 	}
-	defer errtools.DeferClose(&rerr, f)
 
-	if _, err := f.Write(bts); err != nil {
+	logEntryData, err := json.Marshal(logEntry)
+	if err != nil {
 		return nil, err
 	}
+	logEntryData = append(logEntryData, '\n')
 
-	config.LastEntry = logEntry
-	if err := s.saveConfig(config); err != nil {
-		return nil, err
+	{ // Append to log
+		// FIXME: flock
+		f, err := os.OpenFile(s.logFile(), os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
+		if err != nil {
+			return nil, err
+		}
+		defer errtools.DeferClose(&rerr, f)
+
+		if _, err := f.Write(logEntryData); err != nil {
+			return nil, err
+		}
+	}
+
+	{ // Update config with last entry
+		config.LastEntry = logEntry
+		if err := s.saveConfig(config); err != nil {
+			return nil, err
+		}
+	}
+
+	{ // Write status file
+		if err := ioutil.WriteFile(filepath.Join(statusPath, logEntry.StatusFile), statusData, 0600); err != nil {
+			return nil, err
+		}
+
 	}
 
 	return status, nil

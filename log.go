@@ -1,13 +1,16 @@
 package prj
 
-import "time"
+import (
+	"time"
+)
 
 type LogEntry struct {
-	Author    string
-	Message   string
-	Machine   string
-	Hash      Hash
-	Size      int64
-	FileCount int
-	ModTime   time.Time
+	Author     string
+	Message    string
+	Machine    string
+	Hash       Hash
+	Size       int64
+	FileCount  int
+	ModTime    time.Time
+	StatusFile string
 }

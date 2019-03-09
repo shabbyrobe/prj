@@ -1,6 +1,8 @@
 package prj
 
 import (
+	"encoding/hex"
+	"fmt"
 	"sort"
 	"time"
 )
@@ -20,15 +22,23 @@ type ProjectStatus struct {
 }
 
 func (status *ProjectStatus) LogEntry(session *Session, message string) *LogEntry {
-	return &LogEntry{
-		Author:    session.User,
-		Machine:   session.Machine,
-		Hash:      status.Hash,
-		ModTime:   status.ModTime,
-		Size:      status.Size,
-		FileCount: len(status.Files),
-		Message:   message,
+	le := &LogEntry{
+		Author:     session.User,
+		Machine:    session.Machine,
+		Hash:       status.Hash,
+		ModTime:    status.ModTime,
+		Size:       status.Size,
+		FileCount:  len(status.Files),
+		Message:    message,
+		StatusFile: statusFileName(status.ModTime, status.Hash),
 	}
+	return le
+}
+
+func statusFileName(modTime time.Time, hash Hash) string {
+	return fmt.Sprintf("%s-%s.json",
+		modTime.Format("20060102150405"),
+		hex.EncodeToString([]byte(hash.String()))[:16])
 }
 
 func NewProjectStatus(files []ProjectFile) *ProjectStatus {

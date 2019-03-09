@@ -11,6 +11,7 @@ const (
 	ProjectPath       = ".prj"
 	ProjectConfigFile = "config.json"
 	ProjectLogFile    = "log.jsonl"
+	projectStatusPath = "status" // Child of ProjectPath
 )
 
 type ProjectConfig struct {
