@@ -9,24 +9,24 @@ import (
 	prj "github.com/shabbyrobe/prj"
 )
 
-type infoCommand struct {
+type hashCommand struct {
 	path string
 }
 
-func (cmd *infoCommand) Synopsis() string { return "Display info about current hash" }
+func (cmd *hashCommand) Synopsis() string { return "Display current hash" }
 
-func (cmd *infoCommand) Args() *args.ArgSet {
+func (cmd *hashCommand) Args() *args.ArgSet {
 	set := args.NewArgSet()
 	set.StringOptional(&cmd.path, "path", "", "Limit status check to child path, if passed")
 	return set
 }
 
-func (cmd *infoCommand) Flags() *cmdy.FlagSet {
+func (cmd *hashCommand) Flags() *cmdy.FlagSet {
 	set := cmdy.NewFlagSet()
 	return set
 }
 
-func (cmd *infoCommand) Run(ctx cmdy.Context) error {
+func (cmd *hashCommand) Run(ctx cmdy.Context) error {
 	project, _, err := loadProject()
 	if err != nil {
 		return err

@@ -18,12 +18,12 @@ func run() error {
 		return cmdy.NewGroup(
 			"prj: your friendly arbitrary project folder helper",
 			cmdy.Builders{
-				"find":   func() (cmdy.Command, cmdy.Init) { return &findCommand{}, nil },
-				"info":   func() (cmdy.Command, cmdy.Init) { return &infoCommand{}, nil },
-				"init":   func() (cmdy.Command, cmdy.Init) { return &initCommand{}, nil },
-				"log":    func() (cmdy.Command, cmdy.Init) { return &logCommand{}, nil },
-				"mark":   func() (cmdy.Command, cmdy.Init) { return &markCommand{}, nil },
-				"status": func() (cmdy.Command, cmdy.Init) { return &statusCommand{}, nil },
+				"diff": func() (cmdy.Command, cmdy.Init) { return &diffCommand{}, nil },
+				"find": func() (cmdy.Command, cmdy.Init) { return &findCommand{}, nil },
+				"hash": func() (cmdy.Command, cmdy.Init) { return &hashCommand{}, nil },
+				"init": func() (cmdy.Command, cmdy.Init) { return &initCommand{}, nil },
+				"log":  func() (cmdy.Command, cmdy.Init) { return &logCommand{}, nil },
+				"mark": func() (cmdy.Command, cmdy.Init) { return &markCommand{}, nil },
 			},
 			// cmdy.GroupPrefixMatcher(2),
 		), nil
