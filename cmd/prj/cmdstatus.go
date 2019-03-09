@@ -29,7 +29,7 @@ func (cmd *statusCommand) Run(ctx cmdy.Context) error {
 	}
 
 	start := time.Now()
-	status, err := project.Status(ctx, "")
+	status, err := project.Status(ctx, "", time.Now())
 	if err != nil {
 		return err
 	}

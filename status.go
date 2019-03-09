@@ -41,7 +41,7 @@ func statusFileName(modTime time.Time, hash Hash) string {
 		hex.EncodeToString([]byte(hash.String()))[:16])
 }
 
-func NewProjectStatus(files []ProjectFile) *ProjectStatus {
+func NewProjectStatus(files []ProjectFile, at time.Time) *ProjectStatus {
 	ps := &ProjectStatus{
 		Files: files,
 	}
@@ -55,6 +55,10 @@ func NewProjectStatus(files []ProjectFile) *ProjectStatus {
 			ps.ModTime = file.ModTime
 		}
 		ps.Size += file.Size
+	}
+
+	if ps.ModTime.IsZero() {
+		ps.ModTime = at
 	}
 
 	const projectHashDelimiter = "/"

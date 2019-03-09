@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/shabbyrobe/golib/errtools"
 	"github.com/shabbyrobe/golib/pathtools"
@@ -15,9 +16,16 @@ import (
 
 type ResourcePath string
 
+var markOptionsDefault = &MarkOptions{}
+
+type MarkOptions struct {
+	Force  bool // Ignore 'no change' error
+	Status *ProjectStatus
+}
+
 type Project interface {
-	Status(ctx context.Context, path ResourcePath) (*ProjectStatus, error)
-	Mark(ctx context.Context, session *Session, message string, status *ProjectStatus) (*ProjectStatus, error)
+	Status(ctx context.Context, path ResourcePath, at time.Time) (*ProjectStatus, error)
+	Mark(ctx context.Context, session *Session, message string, at time.Time, options *MarkOptions) (*ProjectStatus, error)
 	Config() (*ProjectConfig, error)
 	Log() ([]*LogEntry, error)
 }
@@ -129,10 +137,16 @@ func (s *SimpleProject) Log() ([]*LogEntry, error) {
 	return entries, nil
 }
 
-func (s *SimpleProject) Mark(ctx context.Context, session *Session, message string, status *ProjectStatus) (rstatus *ProjectStatus, rerr error) {
+func (s *SimpleProject) Mark(ctx context.Context, session *Session, message string, at time.Time, options *MarkOptions) (rstatus *ProjectStatus, rerr error) {
+	if options == nil {
+		options = markOptionsDefault
+	}
+
+	var status = options.Status
+
 	if status == nil {
 		var err error
-		status, err = s.Status(ctx, "")
+		status, err = s.Status(ctx, "", at)
 		if err != nil {
 			return nil, err
 		}
@@ -145,7 +159,7 @@ func (s *SimpleProject) Mark(ctx context.Context, session *Session, message stri
 		return nil, err
 	}
 
-	if config.LastEntry != nil {
+	if !options.Force && config.LastEntry != nil {
 		if ok, err := config.LastEntry.Hash.Equal(logEntry.Hash); err != nil {
 			return status, err
 		} else if ok {
@@ -200,7 +214,7 @@ func (s *SimpleProject) Mark(ctx context.Context, session *Session, message stri
 	return status, nil
 }
 
-func (s *SimpleProject) Status(ctx context.Context, path ResourcePath) (*ProjectStatus, error) {
+func (s *SimpleProject) Status(ctx context.Context, path ResourcePath, at time.Time) (*ProjectStatus, error) {
 	var files []ProjectFile
 
 	if err := filepath.Walk(filepath.Join(s.Root, string(path)), func(path string, info os.FileInfo, err error) error {
@@ -245,7 +259,7 @@ func (s *SimpleProject) Status(ctx context.Context, path ResourcePath) (*Project
 		return nil, err
 	}
 
-	status := NewProjectStatus(files)
+	status := NewProjectStatus(files, at)
 
 	return status, nil
 }

@@ -19,7 +19,7 @@ func InitSimpleProject(ctx context.Context, session *Session, dest string, name 
 	}
 
 	project := &SimpleProject{Root: dest}
-	if _, err := project.Mark(ctx, session, "Initial", nil); err != nil {
+	if _, err := project.Mark(ctx, session, "Initial", at, nil); err != nil {
 		return nil, nil, err
 	}
 
