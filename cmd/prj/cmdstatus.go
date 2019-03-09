@@ -35,9 +35,9 @@ func (cmd *statusCommand) Run(ctx cmdy.Context) error {
 	}
 
 	taken := time.Since(start)
-	spew.Dump(status)
 	spew.Dump(len(status.Files))
 	spew.Dump(status.Size)
+	spew.Dump(status.Hash)
 	spew.Dump(taken)
 
 	return nil

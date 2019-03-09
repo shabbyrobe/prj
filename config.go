@@ -14,6 +14,7 @@ const (
 )
 
 type ProjectConfig struct {
+	ID       string
 	Name     string
 	InitDate time.Time
 
@@ -25,6 +26,10 @@ func ContainsSimpleProject(dir string) (ok bool, err error) {
 		return false, fmt.Errorf("prj: input %q is not absolute", dir)
 	}
 
+	return containsSimpleProjectUnchecked(dir)
+}
+
+func containsSimpleProjectUnchecked(dir string) (ok bool, err error) {
 	_, err = os.Stat(filepath.Join(dir, ProjectPath, ProjectConfigFile))
 	if err == nil {
 		return true, nil

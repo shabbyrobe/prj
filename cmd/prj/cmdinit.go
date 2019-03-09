@@ -53,7 +53,12 @@ func (cmd *initCommand) Run(ctx cmdy.Context) error {
 		_, name = filepath.Split(name)
 	}
 
-	config, err := prj.InitSimpleProject(dest, name, time.Now())
+	session, err := prj.NewOSSession()
+	if err != nil {
+		return err
+	}
+
+	_, config, err := prj.InitSimpleProject(ctx, session, dest, name, time.Now())
 	if err != nil {
 		return err
 	}

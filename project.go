@@ -16,7 +16,26 @@ type ResourcePath string
 
 type Project interface {
 	Status(ctx context.Context, path ResourcePath) (*ProjectStatus, error)
-	Commit(ctx context.Context, session *Session, message string, status *ProjectStatus) (*ProjectStatus, error)
+	Mark(ctx context.Context, session *Session, message string, status *ProjectStatus) (*ProjectStatus, error)
+	Config() (*ProjectConfig, error)
+}
+
+func loadConfigFromDir(dir string) (*ProjectConfig, error) {
+	return loadConfigFile(filepath.Join(dir, ProjectPath, ProjectConfigFile))
+}
+
+func loadConfigFile(file string) (*ProjectConfig, error) {
+	var p ProjectConfig
+	bts, err := ioutil.ReadFile(file)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := json.Unmarshal(bts, &p); err != nil {
+		return nil, err
+	}
+
+	return &p, nil
 }
 
 type SimpleProject struct {
@@ -29,20 +48,6 @@ func (s *SimpleProject) logFile() string {
 
 func (s *SimpleProject) configFile() string {
 	return filepath.Join(s.Root, ProjectPath, ProjectConfigFile)
-}
-
-func (s *SimpleProject) loadConfig() (*ProjectConfig, error) {
-	var p ProjectConfig
-	bts, err := ioutil.ReadFile(s.configFile())
-	if err != nil {
-		return nil, err
-	}
-
-	if err := json.Unmarshal(bts, &p); err != nil {
-		return nil, err
-	}
-
-	return &p, nil
 }
 
 func (s *SimpleProject) saveConfig(pc *ProjectConfig) error {
@@ -59,7 +64,11 @@ func (s *SimpleProject) saveConfig(pc *ProjectConfig) error {
 	return os.Rename(tmpFile, s.configFile())
 }
 
-func (s *SimpleProject) Commit(ctx context.Context, session *Session, message string, status *ProjectStatus) (rstatus *ProjectStatus, rerr error) {
+func (s *SimpleProject) Config() (*ProjectConfig, error) {
+	return loadConfigFromDir(s.Root)
+}
+
+func (s *SimpleProject) Mark(ctx context.Context, session *Session, message string, status *ProjectStatus) (rstatus *ProjectStatus, rerr error) {
 	if status == nil {
 		var err error
 		status, err = s.Status(ctx, "")
@@ -68,7 +77,7 @@ func (s *SimpleProject) Commit(ctx context.Context, session *Session, message st
 		}
 	}
 
-	config, err := s.loadConfig()
+	config, err := s.Config()
 	if err != nil {
 		return nil, err
 	}

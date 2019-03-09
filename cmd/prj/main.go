@@ -18,9 +18,10 @@ func run() error {
 		return cmdy.NewGroup(
 			"prj: your friendly arbitrary project folder helper",
 			cmdy.Builders{
-				"commit": func() (cmdy.Command, cmdy.Init) { return &commitCommand{}, nil },
+				"find":   func() (cmdy.Command, cmdy.Init) { return &findCommand{}, nil },
 				"init":   func() (cmdy.Command, cmdy.Init) { return &initCommand{}, nil },
 				"log":    func() (cmdy.Command, cmdy.Init) { return &logCommand{}, nil },
+				"mark":   func() (cmdy.Command, cmdy.Init) { return &markCommand{}, nil },
 				"status": func() (cmdy.Command, cmdy.Init) { return &statusCommand{}, nil },
 			},
 		), nil

@@ -1,15 +1,32 @@
 package prj
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/gofrs/uuid"
 )
 
-func InitSimpleProject(dest string, name string, at time.Time) (*ProjectConfig, error) {
+func InitSimpleProject(ctx context.Context, session *Session, dest string, name string, at time.Time) (Project, *ProjectConfig, error) {
+	config, err := initSimpleProjectConfig(dest, name, at)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	project := &SimpleProject{Root: dest}
+	if _, err := project.Mark(ctx, session, "Initial", nil); err != nil {
+		return nil, nil, err
+	}
+
+	return project, config, nil
+}
+
+func initSimpleProjectConfig(dest string, name string, at time.Time) (*ProjectConfig, error) {
 	if !filepath.IsAbs(dest) {
 		return nil, fmt.Errorf("prj: input %q is not absolute", dest)
 	}
@@ -21,6 +38,7 @@ func InitSimpleProject(dest string, name string, at time.Time) (*ProjectConfig, 
 	}
 
 	config := &ProjectConfig{
+		ID:       createProjectID(),
 		Name:     name,
 		InitDate: at,
 	}
@@ -40,4 +58,12 @@ func InitSimpleProject(dest string, name string, at time.Time) (*ProjectConfig, 
 	}
 
 	return config, nil
+}
+
+func createProjectID() string {
+	u, err := uuid.NewV4()
+	if err != nil {
+		panic(fmt.Errorf("could not generate project ID"))
+	}
+	return u.String()
 }
