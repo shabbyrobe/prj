@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/shabbyrobe/cmdy"
 	"github.com/shabbyrobe/cmdy/args"
@@ -11,7 +12,9 @@ import (
 )
 
 type findCommand struct {
-	paths []string
+	paths    []string
+	showID   bool
+	showHash bool
 }
 
 func (cmd *findCommand) Synopsis() string { return "Find projects on the filesystem" }
@@ -24,6 +27,8 @@ func (cmd *findCommand) Args() *args.ArgSet {
 
 func (cmd *findCommand) Flags() *cmdy.FlagSet {
 	set := cmdy.NewFlagSet()
+	set.BoolVar(&cmd.showID, "id", false, "Show ID")
+	set.BoolVar(&cmd.showHash, "hash", false, "Show Hash")
 	return set
 }
 
@@ -38,6 +43,14 @@ func (cmd *findCommand) Run(ctx cmdy.Context) error {
 
 	out := ctx.Stdout()
 
+	// FIXME: this is yet another experiment to make tabular CLI layout code
+	// flexible without jank. it failed, spectacularly.
+	//
+	// tabwriter doesn't work here as we want the results to appear as they are
+	// found by the Scanner, not in one big hit.
+	//
+	// maybe if this was wrapped up in a simple struct it wouldn't be so bad.
+
 	type col struct {
 		name   string
 		width  int
@@ -47,11 +60,11 @@ func (cmd *findCommand) Run(ctx cmdy.Context) error {
 	}
 
 	var cols = []col{
-		{"ID", 36, "%-*s", "%-*s", true},
-		{"NAME", 24, "%-*s", "%-*s", false},
-		{"LASTMOD", 32, "%-*s", "%-*s", false},
-		{"HASH", 32, "%-*s", "%-*s", true},
-		{"PATH", 0, "%-*s", "%-*s", false},
+		{"ID", 36, "%-*s", "%-*s", !cmd.showID},
+		{"PROJECT NAME", 30, "%-*s", "%-*s", false},
+		{"LASTMOD", 26, "%-*s", "%-*s", false},
+		{"PATH", 40, "%-*s", "%-*s", false},
+		{"HASH", 0, "%-*s", "%-*s", !cmd.showHash},
 	}
 
 	var hdrTpls = make([]string, 0, len(cols))
@@ -66,6 +79,16 @@ func (cmd *findCommand) Run(ctx cmdy.Context) error {
 	var rowTpl = strings.Join(rowTpls, " ") + "\n"
 
 	var row = []interface{}{}
+	var last int = -1
+	for idx, col := range cols {
+		if !col.hide {
+			last = idx
+		}
+	}
+	if last >= 0 {
+		cols[last].width = 0
+	}
+
 	for _, col := range cols {
 		if !col.hide {
 			row = append(row, col.width, col.name)
@@ -94,20 +117,20 @@ func (cmd *findCommand) Run(ctx cmdy.Context) error {
 			}
 			if !cols[2].hide {
 				if project.Config.LastEntry != nil && !project.Config.LastEntry.ModTime.IsZero() {
-					row = append(row, cols[2].width, project.Config.LastEntry.ModTime)
+					row = append(row, cols[2].width, project.Config.LastEntry.ModTime.Format(time.RFC3339))
 				} else {
 					row = append(row, cols[2].width, "<none>")
 				}
 			}
 			if !cols[3].hide {
-				if project.Config.LastEntry != nil {
-					row = append(row, cols[3].width, project.Config.LastEntry.Hash.String())
-				} else {
-					row = append(row, cols[3].width, "<none>")
-				}
+				row = append(row, cols[3].width, project.Path)
 			}
 			if !cols[4].hide {
-				row = append(row, cols[4].width, project.Path)
+				if project.Config.LastEntry != nil {
+					row = append(row, cols[4].width, project.Config.LastEntry.Hash.String())
+				} else {
+					row = append(row, cols[4].width, "<none>")
+				}
 			}
 
 			fmt.Fprintf(out, rowTpl, row...)

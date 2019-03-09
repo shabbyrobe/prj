@@ -12,31 +12,31 @@ files changed since a particular mark can be queried.
 How?
 ----
 
-Easy!::
+Easy!
 
     go get -u github.com/shabbyrobe/prj/cmd/prj
 
-Initialise::
+Initialise:
 
     cd /path/to/your/thing/that/is/a/project
     prj init
 
-Modify::
+Modify:
 
     touch foo
     prj status
     prj mark -m 'Touched foo'
 
-Modify again::
+Modify again:
 
     rm foo
     prj mark -m 'Removed foo'
 
-Show me the log::
+Show me the log:
 
     prj log
 
-Show me what I've changed::
+Show me what I've changed:
 
     touch pants
     prj status
