@@ -4,8 +4,6 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
-
-	"github.com/shabbyrobe/prj/internal/fastwalk"
 )
 
 type FoundProject struct {
@@ -24,11 +22,18 @@ func Scan(path string) *Scanner {
 		defer close(result)
 		defer close(errc)
 
-		if err := fastwalk.Walk(path, func(path string, mode os.FileMode) error {
-			if !mode.IsDir() {
+		if err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+			// Skipping incoming errors; we actually don't care when scanning
+			// if we can't traverse. The only thing seen so far here is
+			// permissions errors while scanning from root; perhaps we should
+			// log though.
+			if err != nil {
 				return nil
 			}
 
+			if !info.IsDir() {
+				return nil
+			}
 			if _, dir := filepath.Split(path); false ||
 				dir == ".git" ||
 				dir == ".hg" ||
@@ -36,18 +41,19 @@ func Scan(path string) *Scanner {
 				return nil
 			}
 
-			if ok, err := containsSimpleProjectUnchecked(path); err != nil {
-				return err
-			} else if ok {
-				config, err := loadConfigFromDir(path)
-				found := &FoundProject{Path: path, Config: config, Err: err}
-
-				select {
-				case result <- found:
-				case <-stop:
-					return errStop
-				}
+			if ok, _ := containsSimpleProjectUnchecked(path); !ok {
+				return nil
 			}
+
+			config, err := loadConfigFromDir(path)
+			found := &FoundProject{Path: path, Config: config, Err: err}
+
+			select {
+			case result <- found:
+			case <-stop:
+				return errStop
+			}
+
 			return nil
 
 		}); err != nil && err != errStop {

@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/shabbyrobe/cmdy"
 	"github.com/shabbyrobe/cmdy/args"
 )
@@ -35,10 +35,10 @@ func (cmd *statusCommand) Run(ctx cmdy.Context) error {
 	}
 
 	taken := time.Since(start)
-	spew.Dump(len(status.Files))
-	spew.Dump(status.Size)
-	spew.Dump(status.Hash)
-	spew.Dump(taken)
+	fmt.Println(len(status.Files))
+	fmt.Println(status.Size)
+	fmt.Println(status.Hash)
+	fmt.Println(taken)
 
 	return nil
 }
