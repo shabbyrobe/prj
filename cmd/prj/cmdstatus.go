@@ -6,19 +6,27 @@ import (
 
 	"github.com/shabbyrobe/cmdy"
 	"github.com/shabbyrobe/cmdy/args"
+	prj "github.com/shabbyrobe/prj"
 )
 
-type statusCommand struct{}
+type statusCommand struct {
+	path  string
+	stats bool
+	all   bool
+}
 
 func (cmd *statusCommand) Synopsis() string { return "Show the list of changed files" }
 
 func (cmd *statusCommand) Args() *args.ArgSet {
 	set := args.NewArgSet()
+	set.StringOptional(&cmd.path, "path", "", "Limit status check to child path, if passed")
 	return set
 }
 
 func (cmd *statusCommand) Flags() *cmdy.FlagSet {
 	set := cmdy.NewFlagSet()
+	set.BoolVar(&cmd.stats, "stats", false, "Print some stats at the end")
+	set.BoolVar(&cmd.all, "all", false, "Print identical files too")
 	return set
 }
 
@@ -29,16 +37,24 @@ func (cmd *statusCommand) Run(ctx cmdy.Context) error {
 	}
 
 	start := time.Now()
-	status, err := project.Status(ctx, "", time.Now())
+	diff, err := project.Diff(ctx, prj.NewResourcePath(cmd.path), time.Now())
 	if err != nil {
 		return err
 	}
-
 	taken := time.Since(start)
-	fmt.Println(len(status.Files))
-	fmt.Println(status.Size)
-	fmt.Println(status.Hash)
-	fmt.Println(taken)
+
+	out := ctx.Stdout()
+
+	items := diff.Items()
+	for _, item := range items {
+		if cmd.all || item.Status != prj.DiffSame {
+			fmt.Fprintf(out, " %c %s\n", item.Status, item.Path)
+		}
+	}
+
+	if cmd.stats {
+		fmt.Fprintln(ctx.Stderr(), "\ntime taken:", taken)
+	}
 
 	return nil
 }

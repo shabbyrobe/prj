@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/shabbyrobe/golib/errtools"
@@ -15,6 +16,10 @@ import (
 )
 
 type ResourcePath string
+
+func NewResourcePath(p string) ResourcePath {
+	return ResourcePath(strings.TrimLeft(p, string(filepath.Separator)))
+}
 
 var markOptionsDefault = &MarkOptions{}
 
@@ -25,6 +30,7 @@ type MarkOptions struct {
 
 type Project interface {
 	Status(ctx context.Context, path ResourcePath, at time.Time) (*ProjectStatus, error)
+	Diff(ctx context.Context, path ResourcePath, at time.Time) (*ProjectDiff, error)
 	Mark(ctx context.Context, session *Session, message string, at time.Time, options *MarkOptions) (*ProjectStatus, error)
 	Config() (*ProjectConfig, error)
 	Log() ([]*LogEntry, error)
@@ -214,10 +220,10 @@ func (s *SimpleProject) Mark(ctx context.Context, session *Session, message stri
 	return status, nil
 }
 
-func (s *SimpleProject) Status(ctx context.Context, path ResourcePath, at time.Time) (*ProjectStatus, error) {
+func (s *SimpleProject) Status(ctx context.Context, childPath ResourcePath, at time.Time) (*ProjectStatus, error) {
 	var files []ProjectFile
 
-	if err := filepath.Walk(filepath.Join(s.Root, string(path)), func(path string, info os.FileInfo, err error) error {
+	if err := filepath.Walk(filepath.Join(s.Root, string(childPath)), func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -262,4 +268,38 @@ func (s *SimpleProject) Status(ctx context.Context, path ResourcePath, at time.T
 	status := NewProjectStatus(files, at)
 
 	return status, nil
+}
+
+func (s *SimpleProject) Diff(ctx context.Context, path ResourcePath, at time.Time) (*ProjectDiff, error) {
+	config, err := s.Config()
+	if err != nil {
+		return nil, err
+	}
+
+	currentStatus, err := s.Status(ctx, path, at)
+	if err != nil {
+		return nil, err
+	}
+
+	var lastStatus ProjectStatus
+	if config.LastEntry != nil {
+		if config.LastEntry.StatusFile == "" {
+			return nil, fmt.Errorf("prj: no status file for last log entry, cannot diff")
+		}
+
+		bts, err := ioutil.ReadFile(filepath.Join(s.statusPath(), config.LastEntry.StatusFile))
+		if err != nil {
+			return nil, fmt.Errorf("prj: could not read status file for last log entry, cannot diff; previous error: %v", err)
+		}
+
+		if err := json.Unmarshal(bts, &lastStatus); err != nil {
+			return nil, fmt.Errorf("prj: could not unmarshal status file for last log entry, cannot diff; previous error: %v", err)
+		}
+
+		if path != "" {
+			lastStatus = *lastStatus.Filter(path, at)
+		}
+	}
+
+	return currentStatus.CompareTo(&lastStatus)
 }
