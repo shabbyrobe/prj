@@ -45,7 +45,7 @@ func (cmd *logCommand) Run(ctx cmdy.Context) error {
 		return err
 	}
 	sort.Slice(entries, func(i, j int) bool {
-		return entries[i].ModTime.Before(entries[j].ModTime)
+		return entries[i].Time.Before(entries[j].Time)
 	})
 
 	out := ctx.Stdout()
@@ -58,7 +58,7 @@ func (cmd *logCommand) Run(ctx cmdy.Context) error {
 
 		for _, msg := range entries {
 			fmt.Fprintf(w, "%s\t%s\t%d\t%d\t%s\n",
-				msg.ModTime.Format(time.RFC3339),
+				msg.Time.Format(time.RFC3339),
 				fmt.Sprintf("%s@%s", msg.Author, msg.Machine),
 				msg.Size,
 				msg.FileCount,
@@ -75,7 +75,7 @@ func (cmd *logCommand) Run(ctx cmdy.Context) error {
 				"author:   %s\n"+
 				"\n%s\n",
 
-				msg.ModTime,
+				msg.Time,
 				msg.Hash,
 				msg.Size, msg.FileCount,
 				fmt.Sprintf("%s@%s", msg.Author, msg.Machine),

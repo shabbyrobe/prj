@@ -158,7 +158,7 @@ func (s *SimpleProject) Mark(ctx context.Context, session *Session, message stri
 		}
 	}
 
-	logEntry := status.LogEntry(session, message)
+	logEntry := status.LogEntry(session, message, at)
 
 	config, err := s.Config()
 	if err != nil {

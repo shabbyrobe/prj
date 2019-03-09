@@ -52,7 +52,7 @@ func (cmd *hashCommand) Run(ctx cmdy.Context) error {
 		"project:  %s\n"+
 		"projid:   %s\n"+
 		"\n"+
-		"date:     %s\n"+
+		"lastmod:  %s\n"+
 		"hash:     %s\n"+
 		"path:     %q\n"+
 		"contents: %d byte(s), %d file(s)\n"+

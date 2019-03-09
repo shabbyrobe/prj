@@ -71,7 +71,7 @@ func (status *ProjectStatus) Filter(childPath ResourcePath, at time.Time) *Proje
 	return NewProjectStatus(files, at)
 }
 
-func (status *ProjectStatus) LogEntry(session *Session, message string) *LogEntry {
+func (status *ProjectStatus) LogEntry(session *Session, message string, at time.Time) *LogEntry {
 	le := &LogEntry{
 		Author:     session.User,
 		Machine:    session.Machine,
@@ -81,6 +81,7 @@ func (status *ProjectStatus) LogEntry(session *Session, message string) *LogEntr
 		FileCount:  len(status.Files),
 		Message:    message,
 		StatusFile: statusFileName(status.ModTime, status.Hash),
+		Time:       at,
 	}
 	return le
 }
