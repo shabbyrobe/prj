@@ -38,8 +38,8 @@ Show me the log:
 
 Show me what I've changed:
 
-    touch pants
-    prj status
+    touch bar
+    prj diff
 
 Show me all the projects in all descendents of the current folder:
 
