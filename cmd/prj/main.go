@@ -24,6 +24,7 @@ func run() error {
 				"mark":   func() (cmdy.Command, cmdy.Init) { return &markCommand{}, nil },
 				"status": func() (cmdy.Command, cmdy.Init) { return &statusCommand{}, nil },
 			},
+			cmdy.GroupPrefixMatcher(2),
 		), nil
 	}
 

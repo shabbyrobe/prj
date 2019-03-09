@@ -1,6 +1,7 @@
 package prj
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -18,6 +19,7 @@ type Project interface {
 	Status(ctx context.Context, path ResourcePath) (*ProjectStatus, error)
 	Mark(ctx context.Context, session *Session, message string, status *ProjectStatus) (*ProjectStatus, error)
 	Config() (*ProjectConfig, error)
+	Log() ([]*LogEntry, error)
 }
 
 func loadConfigFromDir(dir string) (*ProjectConfig, error) {
@@ -41,6 +43,8 @@ func loadConfigFile(file string) (*ProjectConfig, error) {
 type SimpleProject struct {
 	Root string
 }
+
+var _ Project = (*SimpleProject)(nil)
 
 func (s *SimpleProject) logFile() string {
 	return filepath.Join(s.Root, ProjectPath, ProjectLogFile)
@@ -66,6 +70,43 @@ func (s *SimpleProject) saveConfig(pc *ProjectConfig) error {
 
 func (s *SimpleProject) Config() (*ProjectConfig, error) {
 	return loadConfigFromDir(s.Root)
+}
+
+func (s *SimpleProject) Log() ([]*LogEntry, error) {
+	logFile := s.logFile()
+	if _, err := os.Stat(logFile); os.IsNotExist(err) {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	f, err := os.Open(logFile)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	var entries []*LogEntry
+
+	scn := bufio.NewScanner(f)
+	for scn.Scan() {
+		bts := scn.Bytes()
+		if len(bts) == 0 {
+			continue
+		}
+
+		var entry LogEntry
+		if err := json.Unmarshal(bts, &entry); err != nil {
+			return nil, err
+		}
+
+		entries = append(entries, &entry)
+	}
+	if err := scn.Err(); err != nil {
+		return nil, err
+	}
+
+	return entries, nil
 }
 
 func (s *SimpleProject) Mark(ctx context.Context, session *Session, message string, status *ProjectStatus) (rstatus *ProjectStatus, rerr error) {

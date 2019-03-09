@@ -1,3 +1,4 @@
 - Compare two projects
 - Save status
 - Show list of changed files
+- Use Git if project folder is a git folder rather than SimpleProject
