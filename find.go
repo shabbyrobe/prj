@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/shabbyrobe/go-prj/internal/fastwalk"
+	"github.com/shabbyrobe/prj/internal/fastwalk"
 )
 
 type FoundProject struct {

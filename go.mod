@@ -1,4 +1,4 @@
-module github.com/shabbyrobe/go-prj
+module github.com/shabbyrobe/prj
 
 require (
 	github.com/davecgh/go-spew v1.1.1

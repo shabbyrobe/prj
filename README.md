@@ -14,7 +14,7 @@ How?
 
 Easy!::
 
-    go get -u github.com/shabbyrobe/go-prj/cmd/prj
+    go get -u github.com/shabbyrobe/prj/cmd/prj
 
 Initialise::
 

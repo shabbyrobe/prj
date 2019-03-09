@@ -18,7 +18,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/shabbyrobe/go-prj/internal/fastwalk"
+	"github.com/shabbyrobe/prj/internal/fastwalk"
 )
 
 func formatFileModes(m map[string]os.FileMode) string {

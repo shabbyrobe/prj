@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	prj "github.com/shabbyrobe/go-prj"
+	prj "github.com/shabbyrobe/prj"
 )
 
 func loadProject() (prj.Project, *prj.Session, error) {

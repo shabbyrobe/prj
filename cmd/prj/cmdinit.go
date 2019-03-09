@@ -9,7 +9,7 @@ import (
 
 	"github.com/shabbyrobe/cmdy"
 	"github.com/shabbyrobe/cmdy/args"
-	prj "github.com/shabbyrobe/go-prj"
+	prj "github.com/shabbyrobe/prj"
 )
 
 type initCommand struct {
