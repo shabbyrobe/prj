@@ -2,8 +2,9 @@ package prj
 
 import (
 	"errors"
-	"os"
 	"path/filepath"
+
+	"github.com/karrick/godirwalk"
 )
 
 type FoundProject struct {
@@ -22,41 +23,44 @@ func Scan(path string) *Scanner {
 		defer close(result)
 		defer close(errc)
 
-		if err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
-			// Skipping incoming errors; we actually don't care when scanning
-			// if we can't traverse. The only thing seen so far here is
-			// permissions errors while scanning from root; perhaps we should
-			// log though.
-			if err != nil {
+		err := godirwalk.Walk(path, &godirwalk.Options{
+			Unsorted:            true,
+			FollowSymbolicLinks: false,
+			ErrorCallback: func(osPathname string, err error) godirwalk.ErrorAction {
+				// Skipping incoming errors; we actually don't care when scanning
+				// if we can't traverse. The only thing seen so far here is
+				// permissions errors while scanning from root; perhaps we should
+				// log though.
+				return godirwalk.SkipNode
+			},
+			Callback: func(path string, info *godirwalk.Dirent) error {
+				if !info.IsDir() {
+					return nil
+				}
+				if _, dir := filepath.Split(path); false ||
+					dir == ".git" ||
+					dir == ".hg" ||
+					dir == ".svn" {
+					return nil
+				}
+				if ok, _ := containsSimpleProjectUnchecked(path); !ok {
+					return nil
+				}
+
+				config, err := loadConfigFromDir(path)
+				found := &FoundProject{Path: path, Config: config, Err: err}
+
+				select {
+				case result <- found:
+				case <-stop:
+					return errStop
+				}
+
 				return nil
-			}
+			},
+		})
 
-			if !info.IsDir() {
-				return nil
-			}
-			if _, dir := filepath.Split(path); false ||
-				dir == ".git" ||
-				dir == ".hg" ||
-				dir == ".svn" {
-				return nil
-			}
-
-			if ok, _ := containsSimpleProjectUnchecked(path); !ok {
-				return nil
-			}
-
-			config, err := loadConfigFromDir(path)
-			found := &FoundProject{Path: path, Config: config, Err: err}
-
-			select {
-			case result <- found:
-			case <-stop:
-				return errStop
-			}
-
-			return nil
-
-		}); err != nil && err != errStop {
+		if err != nil && err != errStop {
 			errc <- err
 		}
 	}()
