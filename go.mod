@@ -8,4 +8,5 @@ require (
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/shabbyrobe/cmdy v0.3.1
 	github.com/shabbyrobe/golib v0.0.0-20190203102441-f131577ebe19
+	golang.org/x/xerrors v0.0.0-20190212162355-a5947ffaace3
 )

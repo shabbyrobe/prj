@@ -8,9 +8,9 @@ import (
 )
 
 type FoundProject struct {
-	Path   string
-	Config *ProjectConfig
-	Err    error
+	Path    string
+	Project Project
+	Err     error
 }
 
 func Scan(path string) *Scanner {
@@ -37,23 +37,35 @@ func Scan(path string) *Scanner {
 				if !info.IsDir() {
 					return nil
 				}
+
+				// We recurse into projects to look for child projects, so
+				// let's explicitly omit config directories, which we don't
+				// want to recurse into:
 				if _, dir := filepath.Split(path); false ||
 					dir == ".git" ||
 					dir == ".hg" ||
+					dir == ".prj" ||
 					dir == ".svn" {
 					return nil
 				}
-				if ok, _ := containsSimpleProjectUnchecked(path); !ok {
-					return nil
+
+				var proj Project
+				var err error
+				if ok, _ := containsSimpleProjectUnchecked(path); ok {
+					proj, err = LoadSimpleProject(path)
+
+				} else if ok, _ := containsGitProjectUnchecked(path); ok {
+					proj, err = LoadGitProject(path)
 				}
 
-				config, err := loadConfigFromDir(path)
-				found := &FoundProject{Path: path, Config: config, Err: err}
+				if proj != nil || err != nil {
+					found := &FoundProject{Path: path, Project: proj, Err: err}
 
-				select {
-				case result <- found:
-				case <-stop:
-					return errStop
+					select {
+					case result <- found:
+					case <-stop:
+						return errStop
+					}
 				}
 
 				return nil
@@ -94,7 +106,7 @@ func (scn *Scanner) Next() bool {
 	}
 }
 
-func (scn *Scanner) Project() *FoundProject { return scn.cur }
+func (scn *Scanner) Current() *FoundProject { return scn.cur }
 
 func (scn *Scanner) Close() error {
 	close(scn.stop)

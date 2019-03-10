@@ -1,7 +1,9 @@
 package prj
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -14,7 +16,7 @@ const (
 	projectStatusPath = "status" // Child of ProjectPath
 )
 
-type ProjectConfig struct {
+type SimpleProjectConfig struct {
 	ID       string
 	Name     string
 	InitDate time.Time
@@ -67,4 +69,22 @@ func FindSimpleProjectRoot(in string) (path string, err error) {
 		}
 		cur = next
 	}
+}
+
+func loadConfigFromDir(dir string) (*SimpleProjectConfig, error) {
+	return loadConfigFile(filepath.Join(dir, ProjectPath, ProjectConfigFile))
+}
+
+func loadConfigFile(file string) (*SimpleProjectConfig, error) {
+	var p SimpleProjectConfig
+	bts, err := ioutil.ReadFile(file)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := json.Unmarshal(bts, &p); err != nil {
+		return nil, err
+	}
+
+	return &p, nil
 }

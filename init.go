@@ -12,13 +12,17 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-func InitSimpleProject(ctx context.Context, session *Session, dest string, name string, at time.Time) (Project, *ProjectConfig, error) {
+func InitSimpleProject(ctx context.Context, session *Session, dest string, name string, at time.Time) (Project, *SimpleProjectConfig, error) {
 	config, err := initSimpleProjectConfig(dest, name, at)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	project := &SimpleProject{Root: dest}
+	project, err := LoadSimpleProject(dest)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	if _, err := project.Mark(ctx, session, "Initial", at, nil); err != nil {
 		return nil, nil, err
 	}
@@ -26,7 +30,7 @@ func InitSimpleProject(ctx context.Context, session *Session, dest string, name 
 	return project, config, nil
 }
 
-func initSimpleProjectConfig(dest string, name string, at time.Time) (*ProjectConfig, error) {
+func initSimpleProjectConfig(dest string, name string, at time.Time) (*SimpleProjectConfig, error) {
 	if !filepath.IsAbs(dest) {
 		return nil, fmt.Errorf("prj: input %q is not absolute", dest)
 	}
@@ -37,7 +41,7 @@ func initSimpleProjectConfig(dest string, name string, at time.Time) (*ProjectCo
 		return nil, fmt.Errorf("prj: project already exists at dest %q", dest)
 	}
 
-	config := &ProjectConfig{
+	config := &SimpleProjectConfig{
 		ID:       createProjectID(),
 		Name:     name,
 		InitDate: at,

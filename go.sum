@@ -12,3 +12,5 @@ github.com/shabbyrobe/cmdy v0.3.1 h1:WRiYe94FC8MbE1a0mmxbWrpH0jV6sDDXwA+KlCxf4z0
 github.com/shabbyrobe/cmdy v0.3.1/go.mod h1:ZCBDYC9BHo9zq4MQsrXXhg3xmpuHELmvWVUpVLgnPXw=
 github.com/shabbyrobe/golib v0.0.0-20190203102441-f131577ebe19 h1:czELP6izZSIjZr1BNjw40q6FfdPgqmLfIwk4kqIlHyg=
 github.com/shabbyrobe/golib v0.0.0-20190203102441-f131577ebe19/go.mod h1:A0K2jJciVDp5RFGaI+uKiUlzhFce6bamE621B9bJGjg=
+golang.org/x/xerrors v0.0.0-20190212162355-a5947ffaace3 h1:P6iTFmrTQqWrqLZPX1VMzCUbCRCAUXSUsSpkEOvWzJ0=
+golang.org/x/xerrors v0.0.0-20190212162355-a5947ffaace3/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=

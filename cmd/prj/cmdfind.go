@@ -59,12 +59,22 @@ func (cmd *findCommand) Run(ctx cmdy.Context) error {
 		hide   bool
 	}
 
+	const (
+		colID = iota
+		colKind
+		colName
+		colLastMod
+		colPath
+		colHash
+	)
+
 	var cols = []col{
-		{"ID", 36, "%-*s", "%-*s", !cmd.showID},
-		{"PROJECT NAME", 30, "%-*s", "%-*s", false},
-		{"LASTMOD", 26, "%-*s", "%-*s", false},
-		{"PATH", 40, "%-*s", "%-*s", false},
-		{"HASH", 0, "%-*s", "%-*s", !cmd.showHash},
+		colID:      {"ID", 36, "%-*s", "%-*s", !cmd.showID},
+		colKind:    {"KIND", 6, "%-*s", "%-*s", false},
+		colName:    {"PROJECT NAME", 30, "%-*s", "%-*s", false},
+		colLastMod: {"LASTMOD", 26, "%-*s", "%-*s", false},
+		colPath:    {"PATH", 40, "%-*s", "%-*s", false},
+		colHash:    {"HASH", 0, "%-*s", "%-*s", !cmd.showHash},
 	}
 
 	var hdrTpls = make([]string, 0, len(cols))
@@ -101,35 +111,40 @@ func (cmd *findCommand) Run(ctx cmdy.Context) error {
 	for _, path := range cmd.paths {
 		scn := prj.Scan(path)
 		for scn.Next() {
-			project := scn.Project()
+			found := scn.Current()
 
-			if project.Config == nil {
-				failed = append(failed, project)
+			if found.Project == nil {
+				failed = append(failed, found)
 				continue
 			}
 
+			lastEntry := found.Project.LastEntry()
+
 			row = row[:0]
-			if !cols[0].hide {
-				row = append(row, cols[0].width, project.Config.ID)
+			if !cols[colID].hide {
+				row = append(row, cols[colID].width, found.Project.ID())
 			}
-			if !cols[1].hide {
-				row = append(row, cols[1].width, project.Config.Name)
+			if !cols[colKind].hide {
+				row = append(row, cols[colKind].width, found.Project.Kind())
 			}
-			if !cols[2].hide {
-				if project.Config.LastEntry != nil && !project.Config.LastEntry.ModTime.IsZero() {
-					row = append(row, cols[2].width, project.Config.LastEntry.ModTime.Format(time.RFC3339))
+			if !cols[colName].hide {
+				row = append(row, cols[colName].width, found.Project.Name())
+			}
+			if !cols[colLastMod].hide {
+				if lastEntry != nil && !lastEntry.ModTime.IsZero() {
+					row = append(row, cols[colLastMod].width, lastEntry.ModTime.Format(time.RFC3339))
 				} else {
-					row = append(row, cols[2].width, "<none>")
+					row = append(row, cols[colLastMod].width, "<none>")
 				}
 			}
-			if !cols[3].hide {
-				row = append(row, cols[3].width, project.Path)
+			if !cols[colPath].hide {
+				row = append(row, cols[colPath].width, found.Path)
 			}
-			if !cols[4].hide {
-				if project.Config.LastEntry != nil {
-					row = append(row, cols[4].width, project.Config.LastEntry.Hash.String())
+			if !cols[colHash].hide {
+				if lastEntry != nil {
+					row = append(row, cols[colHash].width, lastEntry.Hash.String())
 				} else {
-					row = append(row, cols[4].width, "<none>")
+					row = append(row, cols[colHash].width, "<none>")
 				}
 			}
 

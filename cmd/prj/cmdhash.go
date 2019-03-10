@@ -32,11 +32,6 @@ func (cmd *hashCommand) Run(ctx cmdy.Context) error {
 		return err
 	}
 
-	config, err := project.Config()
-	if err != nil {
-		return err
-	}
-
 	path := prj.NewResourcePath(cmd.path)
 
 	start := time.Now()
@@ -58,8 +53,8 @@ func (cmd *hashCommand) Run(ctx cmdy.Context) error {
 		"contents: %d byte(s), %d file(s)\n"+
 		"taken:    %s\n",
 
-		config.Name,
-		config.ID,
+		project.Name(),
+		project.ID(),
 		status.ModTime,
 		status.Hash,
 		path,

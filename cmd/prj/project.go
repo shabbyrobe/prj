@@ -17,7 +17,10 @@ func loadProject() (prj.Project, *prj.Session, error) {
 		return nil, nil, err
 	}
 
-	project := &prj.SimpleProject{Root: path}
+	project, err := prj.LoadSimpleProject(path)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	session, err := prj.NewOSSession()
 	if err != nil {
