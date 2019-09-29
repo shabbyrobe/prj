@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/shabbyrobe/cmdy"
-	"github.com/shabbyrobe/cmdy/args"
+	"github.com/shabbyrobe/cmdy/arg"
 	prj "github.com/shabbyrobe/prj"
 )
 
@@ -15,19 +15,12 @@ type hashCommand struct {
 
 func (cmd *hashCommand) Synopsis() string { return "Display current hash" }
 
-func (cmd *hashCommand) Args() *args.ArgSet {
-	set := args.NewArgSet()
-	set.StringOptional(&cmd.path, "path", "", "Limit status check to child path, if passed")
-	return set
-}
-
-func (cmd *hashCommand) Flags() *cmdy.FlagSet {
-	set := cmdy.NewFlagSet()
-	return set
+func (cmd *hashCommand) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
+	args.StringOptional(&cmd.path, "path", "", "Limit status check to child path, if passed")
 }
 
 func (cmd *hashCommand) Run(ctx cmdy.Context) error {
-	project, _, err := loadProject()
+	project, _, err := loadProject("")
 	if err != nil {
 		return err
 	}

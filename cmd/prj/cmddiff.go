@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/shabbyrobe/cmdy"
-	"github.com/shabbyrobe/cmdy/args"
+	"github.com/shabbyrobe/cmdy/arg"
 	prj "github.com/shabbyrobe/prj"
 )
 
@@ -17,21 +17,14 @@ type diffCommand struct {
 
 func (cmd *diffCommand) Synopsis() string { return "Show the list of changed files" }
 
-func (cmd *diffCommand) Args() *args.ArgSet {
-	set := args.NewArgSet()
-	set.StringOptional(&cmd.path, "path", "", "Limit status check to child path, if passed")
-	return set
-}
-
-func (cmd *diffCommand) Flags() *cmdy.FlagSet {
-	set := cmdy.NewFlagSet()
-	set.BoolVar(&cmd.stats, "stats", false, "Print some stats at the end")
-	set.BoolVar(&cmd.all, "all", false, "Print identical files too")
-	return set
+func (cmd *diffCommand) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
+	flags.BoolVar(&cmd.stats, "stats", false, "Print some stats at the end")
+	flags.BoolVar(&cmd.all, "all", false, "Print identical files too")
+	args.StringOptional(&cmd.path, "path", "", "Limit status check to child path, if passed")
 }
 
 func (cmd *diffCommand) Run(ctx cmdy.Context) error {
-	project, _, err := loadProject()
+	project, _, err := loadProject("")
 	if err != nil {
 		return err
 	}

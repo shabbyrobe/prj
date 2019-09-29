@@ -56,6 +56,9 @@ func Scan(path string) *Scanner {
 
 				} else if ok, _ := containsGitProjectUnchecked(path); ok {
 					proj, err = LoadGitProject(path)
+
+				} else if ok, _ := containsHgProjectUnchecked(path); ok {
+					proj, err = LoadHgProject(path)
 				}
 
 				if proj != nil || err != nil {

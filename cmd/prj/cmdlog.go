@@ -9,7 +9,7 @@ import (
 
 	"github.com/bbrks/wrap"
 	"github.com/shabbyrobe/cmdy"
-	"github.com/shabbyrobe/cmdy/args"
+	"github.com/shabbyrobe/cmdy/arg"
 )
 
 const (
@@ -23,19 +23,12 @@ type logCommand struct {
 
 func (cmd *logCommand) Synopsis() string { return "Show the commit log for this project" }
 
-func (cmd *logCommand) Args() *args.ArgSet {
-	set := args.NewArgSet()
-	return set
-}
-
-func (cmd *logCommand) Flags() *cmdy.FlagSet {
-	set := cmdy.NewFlagSet()
-	set.StringVar(&cmd.display, "display", "short", "Display mode (short, full)")
-	return set
+func (cmd *logCommand) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
+	flags.StringVar(&cmd.display, "display", "short", "Display mode (short, full)")
 }
 
 func (cmd *logCommand) Run(ctx cmdy.Context) error {
-	project, _, err := loadProject()
+	project, _, err := loadProject("")
 	if err != nil {
 		return err
 	}
@@ -83,7 +76,7 @@ func (cmd *logCommand) Run(ctx cmdy.Context) error {
 		}
 
 	default:
-		return cmdy.NewUsageErrorf("unknown -display %q", cmd.display)
+		return cmdy.UsageErrorf("unknown -display %q", cmd.display)
 	}
 
 	return nil

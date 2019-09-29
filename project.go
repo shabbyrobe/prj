@@ -7,13 +7,6 @@ import (
 	"time"
 )
 
-type ProjectKind string
-
-const (
-	ProjectSimple ProjectKind = "prj"
-	ProjectGit    ProjectKind = "git"
-)
-
 type ResourcePath string
 
 func NewResourcePath(p string) ResourcePath {

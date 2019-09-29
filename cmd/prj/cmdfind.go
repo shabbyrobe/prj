@@ -7,29 +7,24 @@ import (
 	"time"
 
 	"github.com/shabbyrobe/cmdy"
-	"github.com/shabbyrobe/cmdy/args"
-	prj "github.com/shabbyrobe/prj"
+	"github.com/shabbyrobe/cmdy/arg"
+	"github.com/shabbyrobe/prj"
 )
 
 type findCommand struct {
 	paths    []string
 	showID   bool
 	showHash bool
+	kinds    prj.ProjectKindSet
 }
 
 func (cmd *findCommand) Synopsis() string { return "Find projects on the filesystem" }
 
-func (cmd *findCommand) Args() *args.ArgSet {
-	set := args.NewArgSet()
-	set.Remaining(&cmd.paths, "paths", args.AnyLen, "List of paths to search for projects. Uses CWD if empty")
-	return set
-}
-
-func (cmd *findCommand) Flags() *cmdy.FlagSet {
-	set := cmdy.NewFlagSet()
-	set.BoolVar(&cmd.showID, "id", false, "Show ID")
-	set.BoolVar(&cmd.showHash, "hash", false, "Show Hash")
-	return set
+func (cmd *findCommand) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
+	flags.BoolVar(&cmd.showID, "id", false, "Show ID")
+	flags.BoolVar(&cmd.showHash, "hash", false, "Show Hash")
+	flags.Var(&cmd.kinds, "kind", "Show these kinds (all active by default)")
+	args.Remaining(&cmd.paths, "paths", arg.AnyLen, "List of paths to search for projects. Uses CWD if empty")
 }
 
 func (cmd *findCommand) Run(ctx cmdy.Context) error {
@@ -39,6 +34,10 @@ func (cmd *findCommand) Run(ctx cmdy.Context) error {
 			return err
 		}
 		cmd.paths = []string{wd}
+	}
+
+	if cmd.kinds.Count() == 0 {
+		cmd.kinds.SetAll()
 	}
 
 	out := ctx.Stdout()
@@ -115,6 +114,9 @@ func (cmd *findCommand) Run(ctx cmdy.Context) error {
 
 			if found.Project == nil {
 				failed = append(failed, found)
+				continue
+			}
+			if !cmd.kinds[found.Project.Kind()] {
 				continue
 			}
 

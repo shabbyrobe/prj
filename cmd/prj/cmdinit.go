@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/shabbyrobe/cmdy"
-	"github.com/shabbyrobe/cmdy/args"
+	"github.com/shabbyrobe/cmdy/arg"
 	prj "github.com/shabbyrobe/prj"
 )
 
@@ -19,16 +19,9 @@ type initCommand struct {
 
 func (cmd *initCommand) Synopsis() string { return "Initialise a project in the given directory" }
 
-func (cmd *initCommand) Args() *args.ArgSet {
-	set := args.NewArgSet()
-	set.StringOptional(&cmd.dest, "dest", "", "Initialise in this destination. Uses current directory if empty.")
-	return set
-}
-
-func (cmd *initCommand) Flags() *cmdy.FlagSet {
-	set := cmdy.NewFlagSet()
-	set.StringVar(&cmd.name, "name", "", "Name for this project (defaults to the last part of the directory")
-	return set
+func (cmd *initCommand) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
+	flags.StringVar(&cmd.name, "name", "", "Name for this project (defaults to the last part of the directory")
+	args.StringOptional(&cmd.dest, "dest", "", "Initialise in this destination. Uses current directory if empty.")
 }
 
 func (cmd *initCommand) Run(ctx cmdy.Context) error {

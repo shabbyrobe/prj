@@ -11,6 +11,7 @@ import (
 
 type GitProject struct {
 	path string
+	id   string
 }
 
 func ContainsGitProject(dir string) (ok bool, err error) {
@@ -32,12 +33,12 @@ func containsGitProjectUnchecked(dir string) (ok bool, err error) {
 func LoadGitProject(path string) (*GitProject, error) {
 	return &GitProject{
 		path: path,
+		// FIXME: this can be pulled out of the git repo
+		id: "",
 	}, nil
 }
 
-func (g *GitProject) ID() string {
-	return ""
-}
+func (g *GitProject) ID() string { return g.id }
 
 func (g *GitProject) Name() string {
 	_, name := filepath.Split(strings.TrimRight(g.path, string(filepath.Separator)))

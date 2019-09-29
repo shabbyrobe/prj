@@ -1,6 +1,6 @@
 github.com/bbrks/wrap v2.3.0+incompatible h1:9ebLuiUC/fBSu6OeOdD6XG8WRjf3G+wSJO1YZPU2O9I=
 github.com/bbrks/wrap v2.3.0+incompatible/go.mod h1:rc//8Fguf02+4sm0fBMyG1TrAaEhe6VTYM35MY10oO4=
-github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
+github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/gofrs/uuid v3.2.0+incompatible h1:y12jRkkFxsd7GpqdSZ+/KCs/fJbqpEXSGd4+jfEaewE=
 github.com/gofrs/uuid v3.2.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
@@ -8,9 +8,11 @@ github.com/karrick/godirwalk v1.8.0 h1:ycpSqVon/QJJoaT1t8sae0tp1Stg21j+dyuS7Ooag
 github.com/karrick/godirwalk v1.8.0/go.mod h1:H5KPZjojv4lE+QYImBI8xVtrBRgYrIVsaRPx4tDPEn4=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/shabbyrobe/cmdy v0.3.1 h1:WRiYe94FC8MbE1a0mmxbWrpH0jV6sDDXwA+KlCxf4z0=
-github.com/shabbyrobe/cmdy v0.3.1/go.mod h1:ZCBDYC9BHo9zq4MQsrXXhg3xmpuHELmvWVUpVLgnPXw=
+github.com/shabbyrobe/cmdy v0.5.4 h1:LZwW1P5TinAWID8yYVPCfPPGu8sFXZxzBf7CbfpyvLQ=
+github.com/shabbyrobe/cmdy v0.5.4/go.mod h1:icjTVJsAJKtAervao4pClrvG1i3ENB0+414xxH3kfK4=
 github.com/shabbyrobe/golib v0.0.0-20190203102441-f131577ebe19 h1:czELP6izZSIjZr1BNjw40q6FfdPgqmLfIwk4kqIlHyg=
 github.com/shabbyrobe/golib v0.0.0-20190203102441-f131577ebe19/go.mod h1:A0K2jJciVDp5RFGaI+uKiUlzhFce6bamE621B9bJGjg=
-golang.org/x/xerrors v0.0.0-20190212162355-a5947ffaace3 h1:P6iTFmrTQqWrqLZPX1VMzCUbCRCAUXSUsSpkEOvWzJ0=
-golang.org/x/xerrors v0.0.0-20190212162355-a5947ffaace3/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
+github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
+github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
+gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=

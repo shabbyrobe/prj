@@ -6,13 +6,16 @@ import (
 	prj "github.com/shabbyrobe/prj"
 )
 
-func loadProject() (prj.Project, *prj.Session, error) {
-	wd, err := os.Getwd()
-	if err != nil {
-		return nil, nil, err
+func loadProject(in string) (prj.Project, *prj.Session, error) {
+	if in == "" {
+		wd, err := os.Getwd()
+		if err != nil {
+			return nil, nil, err
+		}
+		in = wd
 	}
 
-	path, err := prj.FindSimpleProjectRoot(wd)
+	path, err := prj.FindSimpleProjectRoot(in)
 	if err != nil {
 		return nil, nil, err
 	}

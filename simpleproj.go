@@ -12,7 +12,6 @@ import (
 
 	"github.com/shabbyrobe/golib/errtools"
 	"github.com/shabbyrobe/golib/pathtools"
-	"golang.org/x/xerrors"
 )
 
 type SimpleProject struct {
@@ -222,7 +221,7 @@ func (s *SimpleProject) Status(ctx context.Context, childPath ResourcePath, at t
 
 		hash, err := DefaultHashAlgorithm.HashFile(path)
 		if err != nil {
-			return xerrors.Errorf("prj: hash file %q failed: %v", path, err)
+			return fmt.Errorf("prj: hash file %q failed: %w", path, err)
 		}
 
 		ok, _, left, err := pathtools.FilepathPrefix(path, s.root)
