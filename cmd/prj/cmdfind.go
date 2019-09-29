@@ -120,7 +120,10 @@ func (cmd *findCommand) Run(ctx cmdy.Context) error {
 				continue
 			}
 
-			lastEntry := found.Project.LastEntry()
+			lastEntry, err := found.Project.LastEntry()
+			if err != nil {
+				return err
+			}
 
 			row = row[:0]
 			if !cols[colID].hide {

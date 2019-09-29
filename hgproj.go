@@ -50,7 +50,7 @@ func (g *HgProject) Name() string {
 func (g *HgProject) Path() string      { return g.path }
 func (g *HgProject) Kind() ProjectKind { return ProjectHg }
 
-func (g *HgProject) LastEntry() *LogEntry { return nil }
+func (g *HgProject) LastEntry() (*LogEntry, error) { return nil, nil }
 
 func (g *HgProject) Status(ctx context.Context, path ResourcePath, at time.Time) (*ProjectStatus, error) {
 	return nil, fmt.Errorf("prj: not implemented")

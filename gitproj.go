@@ -31,10 +31,22 @@ func containsGitProjectUnchecked(dir string) (ok bool, err error) {
 }
 
 func LoadGitProject(path string) (*GitProject, error) {
+	// This stuff is too slow:
+	/*
+		repo, err := git.PlainOpen(path)
+		if err != nil {
+			return nil, err
+		}
+		ref, err := repo.Head()
+		if err != nil {
+			return nil, err
+		}
+		id := ref.Hash().String()
+	*/
+	id := ""
 	return &GitProject{
 		path: path,
-		// FIXME: this can be pulled out of the git repo
-		id: "",
+		id:   id,
 	}, nil
 }
 
@@ -48,7 +60,50 @@ func (g *GitProject) Name() string {
 func (g *GitProject) Path() string      { return g.path }
 func (g *GitProject) Kind() ProjectKind { return ProjectGit }
 
-func (g *GitProject) LastEntry() *LogEntry { return nil }
+func (g *GitProject) LastEntry() (*LogEntry, error) {
+	return nil, nil
+	// This stuff is too slow:
+	/*
+		repo, err := git.PlainOpen(g.path)
+		if err != nil {
+			return nil, err
+		}
+		ref, err := repo.Head()
+		if err != nil {
+			return nil, err
+		}
+		obj, err := repo.CommitObject(ref.Hash())
+		if err != nil {
+			return nil, err
+		}
+		iter, err := obj.Files()
+		if err != nil {
+			return nil, err
+		}
+
+		n := 0
+		for {
+			_, err := iter.Next()
+			if err == io.EOF {
+				break
+			} else if err != nil {
+				return nil, err
+			}
+			n++
+		}
+		iter.Close()
+
+		hash := ref.Hash()
+		var lastEntry = LogEntry{
+			Author:    obj.Author.String(),
+			Message:   obj.Message,
+			Hash:      Hash{Value: hash[:]},
+			FileCount: n,
+			Time:      obj.Author.When,
+		}
+		return &lastEntry, nil
+	*/
+}
 
 func (g *GitProject) Status(ctx context.Context, path ResourcePath, at time.Time) (*ProjectStatus, error) {
 	return nil, fmt.Errorf("prj: not implemented")

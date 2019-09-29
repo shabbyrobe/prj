@@ -29,11 +29,12 @@ func LoadSimpleProject(path string) (*SimpleProject, error) {
 	return sp, nil
 }
 
-func (s *SimpleProject) ID() string           { return s.config.ID }
-func (s *SimpleProject) Name() string         { return s.config.Name }
-func (s *SimpleProject) Path() string         { return s.root }
-func (s *SimpleProject) Kind() ProjectKind    { return ProjectSimple }
-func (s *SimpleProject) LastEntry() *LogEntry { return s.config.LastEntry }
+func (s *SimpleProject) ID() string        { return s.config.ID }
+func (s *SimpleProject) Name() string      { return s.config.Name }
+func (s *SimpleProject) Path() string      { return s.root }
+func (s *SimpleProject) Kind() ProjectKind { return ProjectSimple }
+
+func (s *SimpleProject) LastEntry() (*LogEntry, error) { return s.config.LastEntry, nil }
 
 func (s *SimpleProject) logFile() string {
 	return filepath.Join(s.root, ProjectPath, ProjectLogFile)

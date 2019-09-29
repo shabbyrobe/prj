@@ -12,9 +12,13 @@ type LogEntry struct {
 	Hash       Hash
 	Size       int64
 	FileCount  int
-	ModTime    time.Time
 	StatusFile string
-	Time       time.Time
+
+	// Latest modification date of all files in the tree
+	ModTime time.Time
+
+	// Time of the log entry
+	Time time.Time
 }
 
 func (le *LogEntry) UnmarshalJSON(bts []byte) error {

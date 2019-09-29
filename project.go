@@ -25,7 +25,7 @@ type Project interface {
 	Name() string
 	Path() string
 	Kind() ProjectKind
-	LastEntry() *LogEntry
+	LastEntry() (*LogEntry, error)
 	Status(ctx context.Context, path ResourcePath, at time.Time) (*ProjectStatus, error)
 	Diff(ctx context.Context, path ResourcePath, at time.Time) (*ProjectDiff, error)
 	Mark(ctx context.Context, session *Session, message string, at time.Time, options *MarkOptions) (*ProjectStatus, error)

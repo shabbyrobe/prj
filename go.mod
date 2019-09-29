@@ -2,7 +2,6 @@ module github.com/shabbyrobe/prj
 
 require (
 	github.com/bbrks/wrap v2.3.0+incompatible
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/karrick/godirwalk v1.8.0
 	github.com/pmezard/go-difflib v1.0.0
