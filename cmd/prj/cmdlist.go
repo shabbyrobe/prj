@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"text/tabwriter"
 
 	"github.com/shabbyrobe/cmdy"
 	"github.com/shabbyrobe/cmdy/arg"
@@ -12,13 +13,15 @@ import (
 )
 
 type listCommand struct {
-	child string
+	child  string
+	format string
 }
 
 func (cmd *listCommand) Synopsis() string { return "List files tracked by the project" }
 
 func (cmd *listCommand) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
 	args.StringOptional(&cmd.child, "child", "", "Limit status check to child path, if passed")
+	flags.StringVar(&cmd.format, "fmt", "list", "Output format (list, table, json)")
 }
 
 func (cmd *listCommand) Run(ctx cmdy.Context) error {
@@ -47,13 +50,48 @@ func (cmd *listCommand) Run(ctx cmdy.Context) error {
 		return err
 	}
 
-	out := ctx.Stdout()
 	limit := prj.NewResourcePath(cmd.child)
 
-	for _, f := range status.Files {
-		if limit == "" || f.Name.IsChildOf(limit) {
+	var filtered []prj.ProjectFile
+	if limit == "" {
+		filtered = status.Files
+	} else {
+		filtered = make([]prj.ProjectFile, 0, len(status.Files))
+
+		for _, f := range status.Files {
+			if limit == "" || f.Name.IsChildOf(limit) {
+				filtered = append(filtered, f)
+			}
+		}
+	}
+
+	out := ctx.Stdout()
+	if cmd.format == "list" {
+		for _, f := range filtered {
 			fmt.Fprintln(out, f.Name)
 		}
+
+	} else if cmd.format == "table" {
+		w := tabwriter.NewWriter(out, 2, 2, 2, ' ', 0)
+		fmt.Fprintf(w, "NAME\tSIZE\tMODTIME\tHASH\n")
+
+		for _, f := range filtered {
+			fmt.Fprintf(w, "%s\t%d\t%s\t%s\n", f.Name, f.Size, f.ModTime.Format("2006-01-02T15:04:05"), f.Hash)
+		}
+		if err := w.Flush(); err != nil {
+			return err
+		}
+
+	} else if cmd.format == "json" {
+		enc := json.NewEncoder(out)
+		for _, f := range filtered {
+			if err := enc.Encode(f); err != nil {
+				return err
+			}
+		}
+
+	} else {
+		return fmt.Errorf("unknown -fmt")
 	}
 
 	return nil
