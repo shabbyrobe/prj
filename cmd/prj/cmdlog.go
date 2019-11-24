@@ -28,7 +28,7 @@ func (cmd *logCommand) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
 }
 
 func (cmd *logCommand) Run(ctx cmdy.Context) error {
-	project, _, err := loadProject("")
+	project, _, err := loadSimpleProject("")
 	if err != nil {
 		return err
 	}
@@ -64,13 +64,13 @@ func (cmd *logCommand) Run(ctx cmdy.Context) error {
 			fmt.Fprintf(out, ""+
 				"date:     %s\n"+
 				"hash:     %s\n"+
-				"contents: %d byte(s), %d file(s)\n"+
+				"contents: %s, %d byte(s), %d file(s)\n"+
 				"author:   %s\n"+
 				"\n%s\n",
 
 				msg.Time,
 				msg.Hash,
-				msg.Size, msg.FileCount,
+				bytesHuman(msg.Size, 3), msg.Size, msg.FileCount,
 				fmt.Sprintf("%s@%s", msg.Author, msg.Machine),
 				indent(msg.Message))
 		}

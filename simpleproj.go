@@ -15,14 +15,31 @@ import (
 )
 
 type SimpleProject struct {
-	root   string
+	// Real project data files are stored here (user's files)
+	dataRoot string
+
+	// Project metadata is stored here (should be the same as dataRoot, except
+	// in rare cases)
+	metaRoot string
+
 	config *SimpleProjectConfig
 }
 
 var _ Project = (*SimpleProject)(nil)
 
-func LoadSimpleProject(path string) (*SimpleProject, error) {
-	sp := &SimpleProject{root: path}
+func LoadSimpleProject(projectPath string) (*SimpleProject, error) {
+	sp := &SimpleProject{dataRoot: projectPath, metaRoot: projectPath}
+	if err := sp.refreshConfig(); err != nil {
+		return nil, err
+	}
+	return sp, nil
+}
+
+// loadSimpleProjectWithSeparateMeta is a bit of a hack to allow us to create
+// virtual projects on an ad-hoc basis, i.e. when trying to hash or diff to
+// an existing directory that does not contain a project.
+func loadSimpleProjectWithSeparateMeta(dataPath string, metaPath string) (*SimpleProject, error) {
+	sp := &SimpleProject{dataRoot: dataPath, metaRoot: metaPath}
 	if err := sp.refreshConfig(); err != nil {
 		return nil, err
 	}
@@ -31,21 +48,21 @@ func LoadSimpleProject(path string) (*SimpleProject, error) {
 
 func (s *SimpleProject) ID() string        { return s.config.ID }
 func (s *SimpleProject) Name() string      { return s.config.Name }
-func (s *SimpleProject) Path() string      { return s.root }
+func (s *SimpleProject) Path() string      { return s.dataRoot }
 func (s *SimpleProject) Kind() ProjectKind { return ProjectSimple }
 
 func (s *SimpleProject) LastEntry() (*LogEntry, error) { return s.config.LastEntry, nil }
 
 func (s *SimpleProject) logFile() string {
-	return filepath.Join(s.root, ProjectPath, ProjectLogFile)
+	return filepath.Join(s.metaRoot, ProjectPath, ProjectLogFile)
 }
 
 func (s *SimpleProject) configFile() string {
-	return filepath.Join(s.root, ProjectPath, ProjectConfigFile)
+	return filepath.Join(s.metaRoot, ProjectPath, ProjectConfigFile)
 }
 
 func (s *SimpleProject) statusPath() string {
-	return filepath.Join(s.root, ProjectPath, projectStatusPath)
+	return filepath.Join(s.metaRoot, ProjectPath, projectStatusPath)
 }
 
 func (s *SimpleProject) ensureStatusPath() (string, error) {
@@ -79,7 +96,7 @@ func (s *SimpleProject) saveConfig() error {
 }
 
 func (s *SimpleProject) refreshConfig() (err error) {
-	s.config, err = loadConfigFromDir(s.root)
+	s.config, err = loadConfigFromDir(s.metaRoot)
 	return err
 }
 
@@ -199,7 +216,7 @@ func (s *SimpleProject) Mark(ctx context.Context, session *Session, message stri
 func (s *SimpleProject) Status(ctx context.Context, childPath ResourcePath, at time.Time) (*ProjectStatus, error) {
 	var files []ProjectFile
 
-	if err := filepath.Walk(filepath.Join(s.root, string(childPath)), func(path string, info os.FileInfo, err error) error {
+	if err := filepath.Walk(filepath.Join(s.dataRoot, string(childPath)), func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -225,11 +242,11 @@ func (s *SimpleProject) Status(ctx context.Context, childPath ResourcePath, at t
 			return fmt.Errorf("prj: hash file %q failed: %w", path, err)
 		}
 
-		ok, _, left, err := pathtools.FilepathPrefix(path, s.root)
+		ok, _, left, err := pathtools.FilepathPrefix(path, s.dataRoot)
 		if err != nil {
 			return err
 		} else if !ok {
-			return fmt.Errorf("prj: path %q escaped root %q", path, s.root)
+			return fmt.Errorf("prj: path %q escaped root %q", path, s.dataRoot)
 		}
 
 		files = append(files, ProjectFile{

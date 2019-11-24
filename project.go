@@ -10,7 +10,13 @@ import (
 type ResourcePath string
 
 func NewResourcePath(p string) ResourcePath {
-	return ResourcePath(strings.TrimLeft(p, string(filepath.Separator)))
+	return ResourcePath(strings.TrimLeft(filepath.FromSlash(p), string(filepath.Separator)))
+}
+
+func (rp ResourcePath) IsChildOf(parent ResourcePath) bool {
+	pp := strings.TrimRight(string(parent), string(filepath.Separator))
+	cp := strings.TrimRight(string(rp), string(filepath.Separator))
+	return pp != cp && strings.HasPrefix(cp, pp)
 }
 
 var markOptionsDefault = &MarkOptions{}

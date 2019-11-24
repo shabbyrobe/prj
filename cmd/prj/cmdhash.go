@@ -9,23 +9,31 @@ import (
 	prj "github.com/shabbyrobe/prj"
 )
 
+const hashUsage = cmdy.DefaultUsage + `
+NOTE: this does not yet work with Git or Mercurial projects.
+`
+
 type hashCommand struct {
-	path string
+	child   string
+	rawPath string
 }
 
-func (cmd *hashCommand) Synopsis() string { return "Display current hash" }
+func (cmd *hashCommand) Synopsis() string { return "Show hash of the current state of a project" }
+func (cmd *hashCommand) Usage() string    { return hashUsage }
 
 func (cmd *hashCommand) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
-	args.StringOptional(&cmd.path, "path", "", "Limit status check to child path, if passed")
+	flags.StringVar(&cmd.rawPath, "raw", "", "Hash path at -raw, even if it is not a 'prj' project")
+	args.StringOptional(&cmd.child, "child", "", "Limit status check to child path, if passed")
 }
 
 func (cmd *hashCommand) Run(ctx cmdy.Context) error {
-	project, _, err := loadProject("")
+	project, _, done, err := loadSimpleProjectWithTemporaryFallback(ctx, "", cmd.rawPath)
 	if err != nil {
 		return err
 	}
+	defer done()
 
-	path := prj.NewResourcePath(cmd.path)
+	path := prj.NewResourcePath(cmd.child)
 
 	start := time.Now()
 	status, err := project.Status(ctx, path, start)
@@ -43,7 +51,7 @@ func (cmd *hashCommand) Run(ctx cmdy.Context) error {
 		"lastmod:  %s\n"+
 		"hash:     %s\n"+
 		"path:     %q\n"+
-		"contents: %d byte(s), %d file(s)\n"+
+		"contents: %s, %d byte(s), %d file(s)\n"+
 		"taken:    %s\n",
 
 		project.Name(),
@@ -51,7 +59,7 @@ func (cmd *hashCommand) Run(ctx cmdy.Context) error {
 		status.ModTime,
 		status.Hash,
 		path,
-		status.Size, len(status.Files),
+		bytesHuman(status.Size, 3), status.Size, len(status.Files),
 		taken)
 
 	return nil

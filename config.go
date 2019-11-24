@@ -65,7 +65,7 @@ func FindSimpleProjectRoot(in string) (path string, err error) {
 
 		next := filepath.Dir(cur)
 		if next == cur {
-			return "", fmt.Errorf("prj: simple project not found in %q or any of its parents", in)
+			return "", &errSimpleProjectNotFound{Path: in}
 		}
 		cur = next
 	}

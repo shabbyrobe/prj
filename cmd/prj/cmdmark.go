@@ -12,12 +12,17 @@ import (
 	prj "github.com/shabbyrobe/prj"
 )
 
+const markUsage = cmdy.DefaultUsage + `
+NOTE: this does not yet work with Git or Mercurial projects.
+`
+
 type markCommand struct {
 	message string
 	force   bool
 }
 
 func (cmd *markCommand) Synopsis() string { return "Mark the current hash of the project in the log" }
+func (cmd *markCommand) Usage() string    { return markUsage }
 
 func (cmd *markCommand) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
 	flags.StringVar(&cmd.message, "m", "", "Mark message")
@@ -41,7 +46,7 @@ func (cmd *markCommand) Run(ctx cmdy.Context) error {
 		}
 	}
 
-	project, session, err := loadProject("")
+	project, session, err := loadSimpleProject("")
 	if err != nil {
 		return err
 	}

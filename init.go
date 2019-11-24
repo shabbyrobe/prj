@@ -12,13 +12,30 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-func InitSimpleProject(ctx context.Context, session *Session, dest string, name string, at time.Time) (Project, *SimpleProjectConfig, error) {
-	config, err := initSimpleProjectConfig(dest, name, at)
+type initOptions struct {
+	metaPath string
+}
+
+type InitOption func(opts *initOptions)
+
+func InitWithSeparateMetaPath(metaPath string) InitOption {
+	return func(opts *initOptions) { opts.metaPath = metaPath }
+}
+
+func InitSimpleProject(ctx context.Context, session *Session, projectPath string, name string, at time.Time, options ...InitOption) (Project, *SimpleProjectConfig, error) {
+	var opts = initOptions{
+		metaPath: projectPath,
+	}
+	for _, o := range options {
+		o(&opts)
+	}
+
+	config, err := initSimpleProjectConfig(opts.metaPath, name, at)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	project, err := LoadSimpleProject(dest)
+	project, err := loadSimpleProjectWithSeparateMeta(projectPath, opts.metaPath)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -30,15 +47,15 @@ func InitSimpleProject(ctx context.Context, session *Session, dest string, name 
 	return project, config, nil
 }
 
-func initSimpleProjectConfig(dest string, name string, at time.Time) (*SimpleProjectConfig, error) {
-	if !filepath.IsAbs(dest) {
-		return nil, fmt.Errorf("prj: input %q is not absolute", dest)
+func initSimpleProjectConfig(metaPath string, name string, at time.Time) (*SimpleProjectConfig, error) {
+	if !filepath.IsAbs(metaPath) {
+		return nil, fmt.Errorf("prj: input %q is not absolute", metaPath)
 	}
 
-	if exists, err := ContainsSimpleProject(dest); err != nil {
+	if exists, err := ContainsSimpleProject(metaPath); err != nil {
 		return nil, err
 	} else if exists {
-		return nil, fmt.Errorf("prj: project already exists at dest %q", dest)
+		return nil, fmt.Errorf("prj: project already exists at dest %q", metaPath)
 	}
 
 	config := &SimpleProjectConfig{
@@ -47,7 +64,7 @@ func initSimpleProjectConfig(dest string, name string, at time.Time) (*SimplePro
 		InitDate: at,
 	}
 
-	projectPath := filepath.Join(dest, ProjectPath)
+	projectPath := filepath.Join(metaPath, ProjectPath)
 	if err := os.Mkdir(projectPath, 0700); err != nil {
 		return nil, err
 	}

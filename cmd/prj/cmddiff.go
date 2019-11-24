@@ -24,7 +24,7 @@ func (cmd *diffCommand) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
 }
 
 func (cmd *diffCommand) Run(ctx cmdy.Context) error {
-	project, _, err := loadProject("")
+	project, _, err := loadSimpleProject("")
 	if err != nil {
 		return err
 	}
