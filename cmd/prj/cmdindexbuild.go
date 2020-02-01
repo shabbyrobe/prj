@@ -9,8 +9,8 @@ type indexBuildCommand struct {
 	app *App
 }
 
-func (cmd *indexBuildCommand) Synopsis() string {
-	return "Index all projects found under the configured directories"
+func (cmd *indexBuildCommand) Help() cmdy.Help {
+	return cmdy.Synopsis("Index all projects found under the configured directories")
 }
 
 func (cmd *indexBuildCommand) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {}

@@ -15,7 +15,17 @@ type diffCommand struct {
 	all   bool
 }
 
-func (cmd *diffCommand) Synopsis() string { return "Show the list of changed files" }
+func (cmd *diffCommand) Help() cmdy.Help {
+	return cmdy.Help{
+		Synopsis: "Show the list of changed files",
+		Examples: cmdy.Examples{
+			{
+				Desc:    "Show all files, including identical",
+				Command: "-all",
+			},
+		},
+	}
+}
 
 func (cmd *diffCommand) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
 	flags.BoolVar(&cmd.stats, "stats", false, "Print some stats at the end")

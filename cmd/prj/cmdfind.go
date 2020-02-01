@@ -18,7 +18,7 @@ type findCommand struct {
 	kinds    prj.ProjectKindSet
 }
 
-func (cmd *findCommand) Synopsis() string { return "Find projects on the filesystem" }
+func (cmd *findCommand) Help() cmdy.Help { return cmdy.Synopsis("Find projects on the filesystem") }
 
 func (cmd *findCommand) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
 	flags.BoolVar(&cmd.showID, "id", false, "Show ID")

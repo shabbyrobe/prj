@@ -21,7 +21,9 @@ type logCommand struct {
 	display string
 }
 
-func (cmd *logCommand) Synopsis() string { return "Show the commit log for this project" }
+func (cmd *logCommand) Help() cmdy.Help {
+	return cmdy.Synopsis("Show the commit log for this project")
+}
 
 func (cmd *logCommand) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
 	flags.StringVar(&cmd.display, "display", "short", "Display mode (short, full)")

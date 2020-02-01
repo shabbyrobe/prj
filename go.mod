@@ -1,15 +1,13 @@
 module github.com/shabbyrobe/prj
 
+go 1.13
+
 require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/bbrks/wrap v2.3.0+incompatible
-	github.com/davecgh/go-spew v1.1.0
 	github.com/gofrs/uuid v3.2.0+incompatible
-	github.com/karrick/godirwalk v1.8.0
+	github.com/karrick/godirwalk v1.14.1
 	github.com/pmezard/go-difflib v1.0.0
-	github.com/shabbyrobe/cmdy v0.5.4
-	github.com/shabbyrobe/golib v0.0.0-20190203102441-f131577ebe19
-	github.com/stretchr/testify v1.4.0 // indirect
+	github.com/shabbyrobe/cmdy v0.7.1
+	github.com/shabbyrobe/golib v0.0.0-20191226132435-b57206e27f90
 )
-
-go 1.13

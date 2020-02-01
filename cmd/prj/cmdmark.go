@@ -21,8 +21,12 @@ type markCommand struct {
 	force   bool
 }
 
-func (cmd *markCommand) Synopsis() string { return "Mark the current hash of the project in the log" }
-func (cmd *markCommand) Usage() string    { return markUsage }
+func (cmd *markCommand) Help() cmdy.Help {
+	return cmdy.Help{
+		Synopsis: "Mark the current hash of the project in the log",
+		Usage:    markUsage,
+	}
+}
 
 func (cmd *markCommand) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
 	flags.StringVar(&cmd.message, "m", "", "Mark message")

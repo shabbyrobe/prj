@@ -18,8 +18,12 @@ type hashCommand struct {
 	rawPath string
 }
 
-func (cmd *hashCommand) Synopsis() string { return "Show hash of the current state of a project" }
-func (cmd *hashCommand) Usage() string    { return hashUsage }
+func (cmd *hashCommand) Help() cmdy.Help {
+	return cmdy.Help{
+		Synopsis: "Show hash of the current state of a project",
+		Usage:    hashUsage,
+	}
+}
 
 func (cmd *hashCommand) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
 	flags.StringVar(&cmd.rawPath, "raw", "", "Hash path at -raw, even if it is not a 'prj' project")

@@ -17,7 +17,9 @@ type listCommand struct {
 	format string
 }
 
-func (cmd *listCommand) Synopsis() string { return "List files tracked by the project" }
+func (cmd *listCommand) Help() cmdy.Help {
+	return cmdy.Synopsis("List files tracked by the project")
+}
 
 func (cmd *listCommand) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
 	args.StringOptional(&cmd.child, "child", "", "Limit status check to child path, if passed")
