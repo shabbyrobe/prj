@@ -81,7 +81,7 @@ func run() error {
 			cmdy.GroupBefore(func(ctx cmdy.Context) error {
 				if app.wd != "" {
 					if err := os.Chdir(app.wd); err != nil {
-						return fmt.Errorf("-C option invalid, chdir failed: %w", app.wd)
+						return fmt.Errorf("-C option invalid, chdir failed: %s", app.wd)
 					}
 				}
 
