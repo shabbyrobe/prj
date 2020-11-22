@@ -17,7 +17,9 @@ type initCommand struct {
 	dest string
 }
 
-func (cmd *initCommand) Synopsis() string { return "Initialise a project in the given directory" }
+func (cmd *initCommand) Help() cmdy.Help {
+	return cmdy.Synopsis("Initialise a project in the given directory")
+}
 
 func (cmd *initCommand) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
 	flags.StringVar(&cmd.name, "name", "", "Name for this project (defaults to the last part of the directory")

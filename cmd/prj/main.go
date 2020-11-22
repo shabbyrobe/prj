@@ -8,7 +8,6 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/shabbyrobe/cmdy"
-	"github.com/shabbyrobe/cmdy/arg"
 	"github.com/shabbyrobe/cmdy/cmdyutil"
 )
 
@@ -65,8 +64,9 @@ func run() error {
 				"find":  func() cmdy.Command { return &findCommand{} },
 				"hash":  func() cmdy.Command { return &hashCommand{} },
 				"list":  func() cmdy.Command { return &listCommand{} },
-				"init":  func() cmdy.Command { return &helpAdapterCommand{&initCommand{}} },
+				"init":  func() cmdy.Command { return &initCommand{} },
 				"index": indexGroup,
+				"info":  func() cmdy.Command { return &infoCommand{} },
 				"log":   func() cmdy.Command { return &logCommand{} },
 				"mark":  func() cmdy.Command { return &markCommand{} },
 			},
@@ -100,32 +100,4 @@ func run() error {
 	}
 
 	return cmdyutil.InterruptibleRun(context.Background(), os.Args[1:], mainGroup)
-}
-
-type helpAdapterCommand struct {
-	inner interface {
-		Synopsis() string
-		Run(cmdy.Context) error
-		Configure(flags *cmdy.FlagSet, args *arg.ArgSet)
-	}
-}
-
-func (h *helpAdapterCommand) Help() cmdy.Help {
-	var usage string
-	ucmd, ok := h.inner.(interface{ Usage() string })
-	if ok {
-		usage = ucmd.Usage()
-	}
-	return cmdy.Help{
-		Synopsis: h.inner.Synopsis(),
-		Usage:    usage,
-	}
-}
-
-func (h *helpAdapterCommand) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
-	h.inner.Configure(flags, args)
-}
-
-func (h *helpAdapterCommand) Run(ctx cmdy.Context) error {
-	return h.inner.Run(ctx)
 }

@@ -3,6 +3,7 @@ package prj
 import (
 	"errors"
 	"path/filepath"
+	"regexp"
 
 	"github.com/karrick/godirwalk"
 )
@@ -13,7 +14,41 @@ type FoundProject struct {
 	Err     error
 }
 
-func Scan(path string) *Scanner {
+type ScanOption func(scn *scanConfig) error
+
+type scanConfig struct {
+	nested          bool
+	excludePatterns []*regexp.Regexp
+}
+
+func ScanNested() ScanOption {
+	return func(scn *scanConfig) error {
+		scn.nested = true
+		return nil
+	}
+}
+
+func ScanExcludePattern(patterns ...string) ScanOption {
+	return func(scn *scanConfig) error {
+		for _, ptn := range patterns {
+			re, err := regexp.Compile(ptn)
+			if err != nil {
+				return err
+			}
+			scn.excludePatterns = append(scn.excludePatterns, re)
+		}
+		return nil
+	}
+}
+
+func Scan(path string, opts ...ScanOption) *Scanner {
+	var config scanConfig
+	for _, o := range opts {
+		if err := o(&config); err != nil {
+			return &Scanner{done: true, err: err}
+		}
+	}
+
 	var result = make(chan *FoundProject, 2000)
 	var errc = make(chan error, 1)
 	var stop = make(chan struct{})
@@ -36,6 +71,15 @@ func Scan(path string) *Scanner {
 			Callback: func(path string, info *godirwalk.Dirent) error {
 				if !info.IsDir() {
 					return nil
+				}
+
+				if len(config.excludePatterns) > 0 {
+					exp := filepath.ToSlash(path)
+					for _, ptn := range config.excludePatterns {
+						if ptn.MatchString(exp) {
+							return filepath.SkipDir
+						}
+					}
 				}
 
 				// We recurse into projects to look for child projects, so
@@ -68,6 +112,10 @@ func Scan(path string) *Scanner {
 					case result <- found:
 					case <-stop:
 						return errStop
+					}
+
+					if proj != nil && !config.nested {
+						return filepath.SkipDir
 					}
 				}
 
@@ -112,10 +160,14 @@ func (scn *Scanner) Next() bool {
 func (scn *Scanner) Current() *FoundProject { return scn.cur }
 
 func (scn *Scanner) Close() error {
-	close(scn.stop)
-	select {
-	case err := <-scn.errc:
-		scn.done, scn.err = true, err
+	if scn.stop != nil {
+		close(scn.stop)
+	}
+	if scn.errc != nil {
+		select {
+		case err := <-scn.errc:
+			scn.done, scn.err = true, err
+		}
 	}
 	return scn.err
 }
