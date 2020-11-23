@@ -2,6 +2,7 @@ github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/bbrks/wrap v2.3.0+incompatible h1:9ebLuiUC/fBSu6OeOdD6XG8WRjf3G+wSJO1YZPU2O9I=
 github.com/bbrks/wrap v2.3.0+incompatible/go.mod h1:rc//8Fguf02+4sm0fBMyG1TrAaEhe6VTYM35MY10oO4=
+github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/gofrs/uuid v1.2.0 h1:coDhrjgyJaglxSjxuJdqQSSdUpG3w6p1OwN2od6frBU=
 github.com/gofrs/uuid v3.3.0+incompatible h1:8K4tyRfvU1CYPgJsveYFQMhpFd/wXNM7iK6rR7UHz84=
 github.com/gofrs/uuid v3.3.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
@@ -12,6 +13,8 @@ github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZN
 github.com/shabbyrobe/cmdy v0.7.7 h1:CiWBIXK0p69CTdUxj5dvhWyQnxeJA5Myvt5eXp5LRUQ=
 github.com/shabbyrobe/cmdy v0.7.7/go.mod h1:xuN7RWhfcoDr0AYWQrh3woeghCZ3fehmIatRvSoBaDE=
 github.com/shabbyrobe/golib v0.0.0-20200928095438-5007efbc6e6f h1:7sBjbTmwg2lTE4IpmwBCbjXuTdop8LIGvBW7/Y0DFac=
+github.com/shabbyrobe/golib/bytescan v0.0.0-20200928095438-5007efbc6e6f h1:icTEzEX9wUYgkX5mHcCDSGw8DbJHRZwFvwYsj61GKZ4=
+github.com/shabbyrobe/golib/bytescan v0.0.0-20200928095438-5007efbc6e6f/go.mod h1:F5kasgqYGfTmvWccu11QMml0/Q1rSygtTUtV4LdwA8A=
 github.com/shabbyrobe/golib/errtools v0.0.0-20200928095438-5007efbc6e6f h1:ZsjqMnuQg7PIm3z4YEEtzM2lcbUyCxLtWIA+vlfIJEU=
 github.com/shabbyrobe/golib/errtools v0.0.0-20200928095438-5007efbc6e6f/go.mod h1:9vqr+2+w/mwaDKZOHs0e0EE2P8jFjHj95eY7GDi5DKs=
 github.com/shabbyrobe/golib/pathtools v0.0.0-20200928095438-5007efbc6e6f h1:tHgTT4CuCFZndcGtyhIoanliURc9RWJ0OmxvQ0T2ouw=

@@ -35,5 +35,12 @@ type Project interface {
 	Status(ctx context.Context, path ResourcePath, at time.Time) (*ProjectStatus, error)
 	Diff(ctx context.Context, path ResourcePath, at time.Time) (*ProjectDiff, error)
 	Mark(ctx context.Context, session *Session, message string, at time.Time, options *MarkOptions) (*ProjectStatus, error)
-	Log() ([]*LogEntry, error)
+	Log() LogIterator
+	Tagger() Tagger
+}
+
+type Tagger interface {
+	Tags() ([]string, error)
+	Tag(with ...string) error
+	Untag(with ...string) error
 }

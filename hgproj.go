@@ -64,6 +64,10 @@ func (g *HgProject) Mark(ctx context.Context, session *Session, message string, 
 	return nil, fmt.Errorf("prj: not implemented")
 }
 
-func (g *HgProject) Log() ([]*LogEntry, error) {
-	return nil, nil
+func (g *HgProject) Log() LogIterator {
+	panic("not implemented")
+}
+
+func (g *HgProject) Tagger() Tagger {
+	return fileTaggerFromDir(g.path)
 }

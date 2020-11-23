@@ -2,4 +2,4 @@
 - Modtime-based quick check (requires all that modtime resolution junk); some of the projects
   I've run into were in the dozens of GBs, which gets impractical.
 - Last modified date from git/hg revisions
-- Ignore nested git/hg repos when finding: top level is the project (disable with flag)
+

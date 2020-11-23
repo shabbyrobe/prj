@@ -18,7 +18,14 @@ type ProjectFile struct {
 }
 
 type ProjectStatus struct {
-	Files   []ProjectFile
+	// All files that make up the project repo at this point in time. May be nil
+	// if the backend cannot report this information.
+	Files []ProjectFile
+
+	// All files that were changed to arrive at this status. May be nil if the backend
+	// cannot report this information.
+	FilesChanged []ProjectFile
+
 	Hash    Hash
 	ModTime time.Time
 	Size    int64
@@ -73,15 +80,16 @@ func (status *ProjectStatus) Filter(childPath ResourcePath, at time.Time) *Proje
 
 func (status *ProjectStatus) LogEntry(session *Session, message string, at time.Time) *LogEntry {
 	le := &LogEntry{
-		Author:     session.User,
-		Machine:    session.Machine,
-		Hash:       status.Hash,
-		ModTime:    status.ModTime,
-		Size:       status.Size,
-		FileCount:  len(status.Files),
-		Message:    message,
-		StatusFile: statusFileName(status.ModTime, status.Hash),
-		Time:       at,
+		Author:       session.User,
+		Machine:      session.Machine,
+		Hash:         status.Hash,
+		ModTime:      status.ModTime,
+		Size:         status.Size,
+		FilesCount:   len(status.Files),
+		FilesChanged: len(status.FilesChanged),
+		Message:      message,
+		StatusFile:   statusFileName(status.ModTime, status.Hash),
+		Time:         at,
 	}
 	return le
 }

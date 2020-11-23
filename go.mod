@@ -9,6 +9,7 @@ require (
 	github.com/karrick/godirwalk v1.16.1
 	github.com/pmezard/go-difflib v1.0.0
 	github.com/shabbyrobe/cmdy v0.7.7
+	github.com/shabbyrobe/golib/bytescan v0.0.0-20200928095438-5007efbc6e6f
 	github.com/shabbyrobe/golib/errtools v0.0.0-20200928095438-5007efbc6e6f
 	github.com/shabbyrobe/golib/pathtools v0.0.0-20200928095438-5007efbc6e6f
 )

@@ -14,6 +14,8 @@ type GitProject struct {
 	id   string
 }
 
+var _ Project = &GitProject{}
+
 func ContainsGitProject(dir string) (ok bool, err error) {
 	if !filepath.IsAbs(dir) {
 		return false, fmt.Errorf("prj: input %q is not absolute", dir)
@@ -117,6 +119,10 @@ func (g *GitProject) Mark(ctx context.Context, session *Session, message string,
 	return nil, fmt.Errorf("prj: not implemented")
 }
 
-func (g *GitProject) Log() ([]*LogEntry, error) {
-	return nil, nil
+func (g *GitProject) Log() LogIterator {
+	panic("not implemented")
+}
+
+func (g *GitProject) Tagger() Tagger {
+	return fileTaggerFromDir(g.path)
 }

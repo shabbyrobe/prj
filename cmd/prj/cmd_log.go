@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"sort"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -10,6 +9,8 @@ import (
 	"github.com/bbrks/wrap"
 	"github.com/shabbyrobe/cmdy"
 	"github.com/shabbyrobe/cmdy/arg"
+	"github.com/shabbyrobe/golib/errtools"
+	"github.com/shabbyrobe/prj"
 )
 
 const (
@@ -29,21 +30,18 @@ func (cmd *logCommand) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {
 	flags.StringVar(&cmd.display, "display", "short", "Display mode (short, full)")
 }
 
-func (cmd *logCommand) Run(ctx cmdy.Context) error {
+func (cmd *logCommand) Run(ctx cmdy.Context) (rerr error) {
 	project, _, err := loadSimpleProject("")
 	if err != nil {
 		return err
 	}
 
-	entries, err := project.Log()
-	if err != nil {
-		return err
-	}
-	sort.Slice(entries, func(i, j int) bool {
-		return entries[i].Time.Before(entries[j].Time)
-	})
+	iter := project.Log()
+	defer errtools.DeferClose(&rerr, iter)
 
 	out := ctx.Stdout()
+
+	var entry prj.LogEntry
 
 	switch cmd.display {
 	case displayShort:
@@ -51,18 +49,18 @@ func (cmd *logCommand) Run(ctx cmdy.Context) error {
 
 		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", "TIME", "AUTHOR", "BYTES", "FILES", "MSG")
 
-		for _, msg := range entries {
+		for iter.Next(&entry) {
 			fmt.Fprintf(w, "%s\t%s\t%d\t%d\t%s\n",
-				msg.Time.Format(time.RFC3339),
-				fmt.Sprintf("%s@%s", msg.Author, msg.Machine),
-				msg.Size,
-				msg.FileCount,
-				truncate(msg.Message, 50))
+				entry.Time.Format(time.RFC3339),
+				fmt.Sprintf("%s@%s", entry.Author, entry.Machine),
+				entry.Size,
+				entry.FilesCount,
+				truncate(entry.Message, 50))
 		}
 		w.Flush()
 
 	case displayFull:
-		for _, msg := range entries {
+		for iter.Next(&entry) {
 			fmt.Fprintf(out, ""+
 				"date:     %s\n"+
 				"hash:     %s\n"+
@@ -70,11 +68,11 @@ func (cmd *logCommand) Run(ctx cmdy.Context) error {
 				"author:   %s\n"+
 				"\n%s\n",
 
-				msg.Time,
-				msg.Hash,
-				bytesHuman(msg.Size, 3), msg.Size, msg.FileCount,
-				fmt.Sprintf("%s@%s", msg.Author, msg.Machine),
-				indent(msg.Message))
+				entry.Time,
+				entry.Hash,
+				bytesHuman(entry.Size, 3), entry.Size, entry.FilesCount,
+				fmt.Sprintf("%s@%s", entry.Author, entry.Machine),
+				indent(entry.Message))
 		}
 
 	default:

@@ -6,13 +6,21 @@ import (
 )
 
 type LogEntry struct {
-	Author     string
-	Message    string
-	Machine    string
-	Hash       Hash
-	Size       int64
-	FileCount  int
+	Author  string
+	Message string
+	Machine string
+	Hash    Hash
+	Size    int64
+
 	StatusFile string
+
+	// Number of files in the repo at this point in time, or -1 if the backend
+	// can't report this information (Git/Hg may make this too expensive).
+	FilesCount int
+
+	// Number of files changed in the repo at this point in time, or -1 if the backend
+	// can't report this information.
+	FilesChanged int
 
 	// Latest modification date of all files in the tree
 	ModTime time.Time
@@ -41,3 +49,20 @@ func (le *LogEntry) UnmarshalJSON(bts []byte) error {
 	*le = LogEntry(entry)
 	return nil
 }
+
+type LogIterator interface {
+	Next(entry *LogEntry) bool
+	Close() error
+}
+
+type errLogIterator struct {
+	err error
+}
+
+func (e *errLogIterator) Next(*LogEntry) bool { return false }
+func (e *errLogIterator) Close() error        { return e.err }
+
+type nilLogIterator struct{}
+
+func (*nilLogIterator) Next(*LogEntry) bool { return false }
+func (*nilLogIterator) Close() error        { return nil }

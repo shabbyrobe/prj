@@ -69,6 +69,7 @@ func run() error {
 				"info":  func() cmdy.Command { return &infoCommand{} },
 				"log":   func() cmdy.Command { return &logCommand{} },
 				"mark":  func() cmdy.Command { return &markCommand{} },
+				"tag":   func() cmdy.Command { return &tagCommand{} },
 			},
 
 			cmdy.GroupFlags(func() *cmdy.FlagSet {

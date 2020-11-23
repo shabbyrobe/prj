@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -51,7 +52,9 @@ func (s *SimpleProject) Name() string      { return s.config.Name }
 func (s *SimpleProject) Path() string      { return s.dataRoot }
 func (s *SimpleProject) Kind() ProjectKind { return ProjectSimple }
 
-func (s *SimpleProject) LastEntry() (*LogEntry, error) { return s.config.LastEntry, nil }
+func (s *SimpleProject) LastEntry() (*LogEntry, error) {
+	return s.config.LastEntry, nil
+}
 
 func (s *SimpleProject) logFile() string {
 	return filepath.Join(s.metaRoot, ProjectPath, ProjectLogFile)
@@ -100,41 +103,20 @@ func (s *SimpleProject) refreshConfig() (err error) {
 	return err
 }
 
-func (s *SimpleProject) Log() ([]*LogEntry, error) {
+func (s *SimpleProject) Log() LogIterator {
 	logFile := s.logFile()
 	if _, err := os.Stat(logFile); os.IsNotExist(err) {
-		return nil, nil
+		return &nilLogIterator{}
 	} else if err != nil {
-		return nil, err
+		return &errLogIterator{err}
 	}
 
 	f, err := os.Open(logFile)
 	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	var entries []*LogEntry
-
-	scn := bufio.NewScanner(f)
-	for scn.Scan() {
-		bts := scn.Bytes()
-		if len(bts) == 0 {
-			continue
-		}
-
-		var entry LogEntry
-		if err := json.Unmarshal(bts, &entry); err != nil {
-			return nil, err
-		}
-
-		entries = append(entries, &entry)
-	}
-	if err := scn.Err(); err != nil {
-		return nil, err
+		return &errLogIterator{err}
 	}
 
-	return entries, nil
+	return &jsonlLogIterator{scn: bufio.NewScanner(f), cls: f}
 }
 
 func (s *SimpleProject) Mark(ctx context.Context, session *Session, message string, at time.Time, options *MarkOptions) (rstatus *ProjectStatus, rerr error) {
@@ -298,4 +280,45 @@ func (s *SimpleProject) Diff(ctx context.Context, path ResourcePath, at time.Tim
 	}
 
 	return currentStatus.CompareTo(&lastStatus)
+}
+
+func (s *SimpleProject) Tagger() Tagger {
+	return fileTaggerFromDir(s.dataRoot)
+}
+
+type jsonlLogIterator struct {
+	scn *bufio.Scanner
+	cls io.Closer
+	err error
+}
+
+func (jl *jsonlLogIterator) Next(entry *LogEntry) bool {
+	if jl.err != nil {
+		return false
+	}
+
+	for jl.scn.Scan() {
+		bts := jl.scn.Bytes()
+		if len(bts) == 0 {
+			continue
+		}
+
+		if err := json.Unmarshal(bts, entry); err != nil {
+			jl.err = err
+			return false
+		}
+		return true
+	}
+
+	return false
+}
+
+func (jl *jsonlLogIterator) Close() error {
+	if cerr := jl.cls.Close(); jl.err == nil && cerr != nil {
+		jl.err = cerr
+	}
+	if serr := jl.scn.Err(); jl.err == nil && serr != nil {
+		jl.err = serr
+	}
+	return jl.err
 }
