@@ -65,6 +65,7 @@ func run() error {
 				"hash":  func() cmdy.Command { return &hashCommand{} },
 				"list":  func() cmdy.Command { return &listCommand{} },
 				"init":  func() cmdy.Command { return &initCommand{} },
+				"id":    func() cmdy.Command { return &idCommand{} },
 				"index": indexGroup,
 				"info":  func() cmdy.Command { return &infoCommand{} },
 				"log":   func() cmdy.Command { return &logCommand{} },

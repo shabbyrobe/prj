@@ -2,4 +2,4 @@
 - Modtime-based quick check (requires all that modtime resolution junk); some of the projects
   I've run into were in the dozens of GBs, which gets impractical.
 - Last modified date from git/hg revisions
-
+- When looking for a project, define priority order (i.e. simpleproj in the same dir as git takes precedence)
