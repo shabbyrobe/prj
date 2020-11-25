@@ -105,6 +105,13 @@ func Scan(path string, opts ...ScanOption) *Scanner {
 					proj, err = LoadHgProject(path)
 				}
 
+				if errors.Is(err, ErrProjectNotFound) {
+					// If the Load functions report "project not found", carry on. This
+					// may happen if a .git repo has been initialised but does not have
+					// its first commit, which we rely on to get the repo ID.
+					proj, err = nil, nil
+				}
+
 				if proj != nil || err != nil {
 					found := &FoundProject{Path: path, Project: proj, Err: err}
 

@@ -15,6 +15,32 @@ const (
 	ProjectKindSize int = iota + 1
 )
 
+func (k ProjectKind) Load(path string) (Project, error) {
+	switch k {
+	case ProjectSimple:
+		return LoadSimpleProject(path)
+	case ProjectGit:
+		return LoadGitProject(path)
+	case ProjectHg:
+		return LoadHgProject(path)
+	default:
+		panic("unsupported contains")
+	}
+}
+
+func (k ProjectKind) Contains(path string) (bool, error) {
+	switch k {
+	case ProjectSimple:
+		return ContainsSimpleProject(path)
+	case ProjectGit:
+		return ContainsGitProject(path)
+	case ProjectHg:
+		return ContainsHgProject(path)
+	default:
+		panic("unsupported contains")
+	}
+}
+
 func (k ProjectKind) String() string {
 	switch k {
 	case ProjectSimple:

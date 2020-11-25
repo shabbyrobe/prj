@@ -17,17 +17,18 @@ func (ec ErrorCode) Error() string {
 }
 
 const (
-	ErrSimpleProjectNotFound ErrorCode = iota + 1
+	ErrProjectNotFound ErrorCode = iota + 1
 )
 
-type errSimpleProjectNotFound struct {
-	Path string
+type errProjectNotFound struct {
+	Path  string
+	Kinds []ProjectKind
 }
 
-func (err *errSimpleProjectNotFound) Is(target error) bool {
-	return target == ErrSimpleProjectNotFound
+func (err *errProjectNotFound) Is(target error) bool {
+	return target == ErrProjectNotFound
 }
 
-func (err *errSimpleProjectNotFound) Error() string {
-	return fmt.Sprintf("prj: simple project not found in %q or any of its parents", err.Path)
+func (err *errProjectNotFound) Error() string {
+	return fmt.Sprintf("prj: project not found in %q or any of its parents", err.Path)
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/shabbyrobe/cmdy"
 	"github.com/shabbyrobe/cmdy/arg"
+	prj "github.com/shabbyrobe/prj"
 )
 
 type infoCommand struct{}
@@ -14,7 +15,8 @@ func (cmd *infoCommand) Help() cmdy.Help { return cmdy.Synopsis("Show project in
 func (cmd *infoCommand) Configure(flags *cmdy.FlagSet, args *arg.ArgSet) {}
 
 func (cmd *infoCommand) Run(ctx cmdy.Context) error {
-	project, _, err := loadSimpleProject("")
+	allKinds := []prj.ProjectKind{prj.ProjectSimple, prj.ProjectGit, prj.ProjectHg}
+	project, _, err := loadProject("", allKinds)
 	if err != nil {
 		return err
 	}

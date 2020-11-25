@@ -286,6 +286,23 @@ func (s *SimpleProject) Tagger() Tagger {
 	return fileTaggerFromDir(s.dataRoot)
 }
 
+func ContainsSimpleProject(dir string) (ok bool, err error) {
+	if !filepath.IsAbs(dir) {
+		return false, fmt.Errorf("prj: input %q is not absolute", dir)
+	}
+	return containsSimpleProjectUnchecked(dir)
+}
+
+func containsSimpleProjectUnchecked(dir string) (ok bool, err error) {
+	_, err = os.Stat(filepath.Join(dir, ProjectPath, ProjectConfigFile))
+	if err == nil {
+		return true, nil
+	} else if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
+}
+
 type jsonlLogIterator struct {
 	scn *bufio.Scanner
 	cls io.Closer

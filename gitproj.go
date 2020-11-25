@@ -2,11 +2,21 @@ package prj
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/go-git/go-billy/v5"
+	"github.com/go-git/go-billy/v5/osfs"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/cache"
+	"github.com/go-git/go-git/v5/plumbing/storer"
+	"github.com/go-git/go-git/v5/storage/filesystem"
+	"github.com/shabbyrobe/golib/errtools"
 )
 
 type GitProject struct {
@@ -33,22 +43,14 @@ func containsGitProjectUnchecked(dir string) (ok bool, err error) {
 }
 
 func LoadGitProject(path string) (*GitProject, error) {
-	// This stuff is too slow:
-	/*
-		repo, err := git.PlainOpen(path)
-		if err != nil {
-			return nil, err
-		}
-		ref, err := repo.Head()
-		if err != nil {
-			return nil, err
-		}
-		id := ref.Hash().String()
-	*/
-	id := ""
+	h, err := gitReadID(path)
+	if err != nil {
+		return nil, err
+	}
+
 	return &GitProject{
 		path: path,
-		id:   id,
+		id:   hex.EncodeToString(h[:]),
 	}, nil
 }
 
@@ -125,4 +127,77 @@ func (g *GitProject) Log() LogIterator {
 
 func (g *GitProject) Tagger() Tagger {
 	return fileTaggerFromDir(g.path)
+}
+
+// Read the ID of a git repository (probably first revision's hash)
+//
+// Custom unrolling of git utilities from go-git is WAY faster than
+// interfacing with go-git directly.
+func gitReadID(path string) (id [20]byte, err error) {
+	dot, err := openDotGit(path)
+	if err != nil {
+		return id, err
+	}
+
+	s := filesystem.NewStorage(dot, cache.NewObjectLRUDefault())
+
+	ref, err := storer.ResolveReference(s, plumbing.HEAD)
+	if err == plumbing.ErrReferenceNotFound {
+		// This means the repo has been initialised but does not contain a commit.
+		// We might be better off catching this error higher up, and allowing the
+		// git project to be returned with an empty, invalid ID, then making sure
+		// we account for "invalid IDs" elsewhere where we might wish to dedupe, etc.
+		return id, &errProjectNotFound{}
+	} else if err != nil {
+		return id, err
+	}
+
+	return ref.Hash(), nil
+}
+
+func openDotGit(path string) (billy.Filesystem, error) {
+	if !filepath.IsAbs(path) {
+		return nil, fmt.Errorf("path must be absolute")
+	}
+
+	var fi os.FileInfo
+
+	fs := osfs.New(path)
+	fi, err := fs.Stat(".git")
+	if err != nil {
+		return nil, err
+	}
+	if fi.IsDir() {
+		dot, err := fs.Chroot(".git")
+		return dot, err
+	}
+
+	return dotGitFileToOSFilesystem(path, fs)
+}
+
+func dotGitFileToOSFilesystem(path string, fs billy.Filesystem) (bfs billy.Filesystem, err error) {
+	f, err := fs.Open(".git")
+	if err != nil {
+		return nil, err
+	}
+	defer errtools.DeferClose(&err, f)
+
+	b, err := ioutil.ReadAll(f)
+	if err != nil {
+		return nil, err
+	}
+
+	line := string(b)
+	const prefix = "gitdir: "
+	if !strings.HasPrefix(line, prefix) {
+		return nil, fmt.Errorf(".git file has no %s prefix", prefix)
+	}
+
+	gitdir := strings.Split(line[len(prefix):], "\n")[0]
+	gitdir = strings.TrimSpace(gitdir)
+	if filepath.IsAbs(gitdir) {
+		return osfs.New(gitdir), nil
+	}
+
+	return osfs.New(fs.Join(path, gitdir)), nil
 }

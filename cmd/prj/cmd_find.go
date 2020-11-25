@@ -62,9 +62,12 @@ func (cmd *findCommand) Run(ctx cmdy.Context) error {
 
 	var exclude = []string{}
 
+	// FIXME: add this to a global configuration
 	if !cmd.noDefaultExclude {
 		exclude = append(exclude,
 			`/\.cargo\/`,
+			`/\.cache\/`,
+			`/\.npm\/`,
 		)
 		if gopath := os.Getenv("GOPATH"); gopath != "" {
 			exclude = append(exclude, regexp.QuoteMeta(gopath))

@@ -3,12 +3,48 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
 
 	prj "github.com/shabbyrobe/prj"
 )
+
+func loadProject(searchPath string, priority []prj.ProjectKind) (prj.Project, *prj.Session, error) {
+	if searchPath == "" {
+		wd, err := os.Getwd()
+		if err != nil {
+			return nil, nil, err
+		}
+		searchPath = wd
+	}
+
+	project, err := prj.Load(searchPath, priority)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	session, err := prj.NewOSSession()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return project, session, nil
+}
+
+type errProjectNotFound struct {
+	Path  string
+	Kinds []prj.ProjectKind
+}
+
+func (err *errProjectNotFound) Is(target error) bool {
+	return target == prj.ErrProjectNotFound
+}
+
+func (err *errProjectNotFound) Error() string {
+	return fmt.Sprintf("prj: project not found in %q or any of its parents", err.Path)
+}
 
 func loadSimpleProject(searchPath string) (prj.Project, *prj.Session, error) {
 	if searchPath == "" {
@@ -47,7 +83,7 @@ func loadSimpleProjectWithTemporaryFallback(ctx context.Context, searchPath stri
 	}()
 
 	p, sess, err = loadSimpleProject(searchPath)
-	if errors.Is(err, prj.ErrSimpleProjectNotFound) {
+	if errors.Is(err, prj.ErrProjectNotFound) {
 		if fallbackPath == "" {
 			return p, sess, done, err
 		}
