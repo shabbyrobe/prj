@@ -153,10 +153,17 @@ func (scn *Scanner) Next() bool {
 		return false
 	}
 
+retry:
 	select {
 	case err := <-scn.errc:
-		scn.done, scn.err = true, err
-		return false
+		if err != nil {
+			scn.done, scn.err = true, err
+			return false
+		} else {
+			// Ensure the result channel drains if the error channel
+			// has closed with a nil error:
+			goto retry
+		}
 
 	case found := <-scn.result:
 		scn.done, scn.cur = found == nil, found
